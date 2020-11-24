@@ -4,7 +4,7 @@
 /// This class is being made simple to start with and covers damage.
 /// </summary>
 public class CombatEffect {
-	public int combatantId;
+	public BattlefieldEntity combatant;
 	public int damage;
 	//TODO: it will be possible to force discards here as well... in case of reaction cards (and possibly also for normal selection)
 }

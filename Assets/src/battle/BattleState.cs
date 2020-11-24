@@ -131,7 +131,7 @@ public class BattleState {
 				) {
 					//Valid input.
 					//TODO: determine changes and apply them
-					determineCombatEffects();
+					applyCombatEffects(determineCombatEffects((Vector2Int)input));
 				} else {
 					//Consider this cancelled and move to next action...
 				}
@@ -199,8 +199,39 @@ public class BattleState {
 		inputSource.processNextAction(this);
 	}
 
-	public void determineCombatEffects() {
+	/// <summary>
+	/// Determines the combat effects of an action on a target.
+	/// Does not validate and thus can be used for "hypothetical" results.
+	/// </summary>
+	/// <param name="target">Target hex position of the action</param>
+	public List<CombatEffect> determineCombatEffects(Vector2Int targetHex) {
 		Debug.Log("determineCombatEffects");
+
+		List<CombatEffect> combatEffects = new List<CombatEffect>();
+		Card.CardAction combatAction = getCurrentAction();
+		Vector2Int[] affectedHexes = HexGrid.getXYsWithinRadius(targetHex.x, targetHex.y, getCurrentAction().radius);
+
+		foreach (BattlefieldEntity entity in battlefieldEntities) {
+			if (entity.isAlive()) {
+				for (int i = 0; i < affectedHexes.Length; i++) {
+					if (entity.pos.Equals(affectedHexes[i])) {
+						CombatEffect combatEffect = new CombatEffect();
+						combatEffect.combatant = entity;
+						combatEffect.damage = combatAction.value;
+						combatEffects.Add(combatEffect);
+					}
+				}
+			}
+		}
+
+		return combatEffects;
+	}
+
+	private void applyCombatEffects(List<CombatEffect> combatEffects) {
+		foreach (CombatEffect effect in combatEffects) {
+			//For now that's it. We're just doing damage.
+			effect.combatant.damage += effect.damage;
+		}
 	}
 
 	//Input state will be used to figure out just exactly how to modify the state based on input commands.

@@ -254,6 +254,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			Camera.main.transform.position += pos;
 		} else {
 			if (uiInputState == SELECT_CARD) {
+				
 
 			} else if (uiInputState == SELECT_MOVE) {
 				Vector2 screenPos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
@@ -362,6 +363,20 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		if (uiInputState == SELECT_CARD) {
 			if (isDown) {
 				//Insert: if not deselecting the selected card...
+
+				/*
+				//Does not work at all:
+				Vector2 screenPos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+
+				RaycastHit2D hitInfo = Physics2D.Raycast(screenPos, Vector2.zero);
+
+				if (hitInfo.transform != null) {
+					Debug.Log(hitInfo.transform.gameObject.name);
+				} else {
+					Debug.Log("Nothing");
+				}
+				*/
+
 
 				//This gonna have to be fixed later...
 				if (isOverPassButton(pos)) {

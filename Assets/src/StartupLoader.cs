@@ -21,9 +21,6 @@ public class StartupLoader : MonoBehaviour {
 			//Because it's a struct, arenaData cannot be null
 			ArenaData arenaData = JsonUtility.FromJson<ArenaData>(await loadArenaData(arenaFilename));
 			GameState.PRNG.seed = 10;
-			for (int i = 0; i < 100; i++) {
-				Logger.getInstance().log(GameState.PRNG.random().ToString("n2"));
-			}
 
 			ImageLibrary imageLibrary = new ImageLibrary();
 
