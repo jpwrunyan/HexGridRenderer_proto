@@ -1,0 +1,8 @@
+﻿public enum CombatAction {
+	SELECT_ACTION,
+	//END_TURN,
+	MOVE,
+	MELEE_ATTACK,
+	RANGE_ATTACK,
+	UNKNOWN
+}
