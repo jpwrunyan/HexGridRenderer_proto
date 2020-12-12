@@ -13686,3 +13686,17 @@ numLengths: 1.732051
 seconds: 1.154701
 numLengths: 2.645752
 seconds: 1.511858
+numLengths: 2
+seconds: 1.25
+numLengths: 2
+seconds: 1.25
+numLengths: 1.732051
+seconds: 1.154701
+numLengths: 1
+seconds: 1
+numLengths: 2
+seconds: 1.25
+numLengths: 2
+seconds: 1.25
+numLengths: 0
+seconds: Infinity

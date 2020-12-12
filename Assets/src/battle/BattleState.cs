@@ -107,7 +107,7 @@ public class BattleState {
 				//Debug.Log("process move action");
 
 				//The "clicked" pos could be anywhere. It's a goal. Find the destination along the path that can actually be moved to.
-				HexNodePathMap pathMap = new HexNodePathMap(hexGrid, battlefieldEntities);
+				HexNodePathMap pathMap = new HexNodePathMap(hexGrid, getBlockedHexes());
 				pathMap.setOrigin(getCurrentCombatant().pos);
 				//Can only move within max range of the action.
 				HexNode dest = pathMap.getClosestHexNodeTo((Vector2Int)input, getCurrentAction().maxRange);
@@ -170,6 +170,7 @@ public class BattleState {
 				//Debug.Log("combatant: " + combatantName + " " + (health - damage) + "/" + health);
 				if (getCombatantById(combatantId).isAlive() == false) {
 					bool removed = combatantIdTurnOrder.Remove(combatantId);
+					passCount++;
 					//Debug.Log("tried to remove: " + combatantName + " " + removed);
 					i--;
 				}
@@ -211,6 +212,7 @@ public class BattleState {
 		Vector2Int[] affectedHexes = HexGrid.getXYsWithinRadius(targetHex.x, targetHex.y, getCurrentAction().radius);
 		//Debug.Log("affectedHexes: " + affectedHexes.Length);
 		foreach (BattlefieldEntity entity in battlefieldEntities) {
+			//We avoid terrain since it has 0 health and is never technically alive in the first place.
 			if (entity.isAlive()) {
 				for (int i = 0; i < affectedHexes.Length; i++) {
 					//Debug.Log("Checking: " + entity.pos);
@@ -234,6 +236,10 @@ public class BattleState {
 		foreach (CombatEffect effect in combatEffects) {
 			//For now that's it. We're just doing damage.
 			effect.combatant.damage += effect.damage;
+			//We'll update here for now until there's a more elegant solution.
+			if (effect.combatant.isAlive() == false) {
+				effect.combatant.blocksMovement = false;
+			}
 			Debug.Log("apply effect to: " + effect.combatant.name + " " + (effect.combatant.health - effect.combatant.damage) + "/" + effect.combatant.health);
 		}
 		Debug.Log("Turn order: " + System.String.Join(",", combatantIdTurnOrder));
