@@ -27,6 +27,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	public CardListDisplay cardListDisplay;
 	public HexGridRenderer hexGridRenderer;
 	public HexPathRenderer hexPathRenderer;
+	public GameObject indicator;
 
 	public Button passButton;
 
@@ -95,6 +96,26 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		//processNextAction();
 		battleState.setInputSource(this);
+
+
+		//test showing text:
+		GameObject textHolder = new GameObject();
+		textHolder.name = "Test Setup Text";
+
+		TextMesh textComp = textHolder.AddComponent<TextMesh>();
+		textComp.text = "test";
+
+		Font font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+		textComp.font = font;
+		textComp.fontSize = 60;
+		textComp.characterSize = 10;
+		textComp.color = Color.red;
+		textComp.transform.SetParent(gameObject.transform, false);
+		Vector3 pos = new Vector3(0, 0, 0);
+		//Adding the TextMesh will automatically add the MeshRenderer
+		textHolder.GetComponent<MeshRenderer>().receiveShadows = false;
+		textHolder.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+		textHolder.transform.localPosition = pos;
 	}
 
 	/// <summary>
@@ -103,12 +124,14 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	/// </summary>
 	public void processNextAction(BattleState battleState) {
 		if (animationManager.isPlaying && battleState.pendingActions.Count > battleState.actionPhase) {
+			indicator.SetActive(false);
 			//Disable and delay next action until animation(s) are complete.
 			uiInputState = DISABLED;
-			animationManager.onComplete = () => { processNextAction(battleState); };
+			animationManager.onComplete = () => processNextAction(battleState);
 			return;
 		} else {
-			animationManager.onComplete = null;
+			indicator.SetActive(true);
+			animationManager.onComplete = () => updateIndicatorPosition();
 		}
 
 		//Debug.Log("process next action: " + battleState.getActionState());
@@ -161,8 +184,24 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			infoText.text += (currentCombatant ? ">" : " ") + battleState.getCombatantsInTurnOrder()[i].name + (currentCombatant ? "<" : " ");
 		}
 		infoText.text += "]";
-		//Temporary:
-		//hexGridRenderer.updateDisplay();
+		infoText.text += " - passcount: " + battleState.passCount;
+
+		Debug.Log("update indicator " + battleState.getCurrentCombatant().pos);
+		updateIndicatorPosition();
+		
+		
+	}
+
+	private void updateIndicatorPosition() {
+		//Update inidicator
+		Vector3 pivot = hexGridRenderer.getEntityRendererByName(battleState.getCurrentCombatant().name).transform.position;
+		indicator.transform.rotation = Camera.main.transform.rotation;
+		Vector3 point = pivot + (Camera.main.transform.up * 50);
+		indicator.gameObject.transform.position = point;
+	}
+
+	public void Update() {
+		indicator.transform.Rotate(Vector3.up * (50 * Time.deltaTime));
 	}
 
 	private void commitCardSelection() {
@@ -173,7 +212,6 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		selectedCardRenderer.setCard(selectedCard);
 		selectedCardRenderer.gameObject.SetActive(true);
 		cardListDisplay.gameObject.SetActive(false);
-
 		battleState.processActionInput(cardListDisplay.selectedIndex);
 	}
 
@@ -226,6 +264,21 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		hexGridRenderer.clearHilight2();
 		hexGridRenderer.reDrawColor();
 		//TODO: determine changes and then animate them.
+		//Debug.Log("commit target selection");
+		List<CombatEffect> pendingEffects = battleState.determineCombatEffects(selectedHexXY);
+		foreach (CombatEffect pendingEffect in pendingEffects) {
+			//There's a smarter way to do this.
+			EntityRenderer target = hexGridRenderer.getEntityRendererByName(pendingEffect.combatant.name);
+			SimpleTextAnimation test = new SimpleTextAnimation(target.gameObject.transform.position, pendingEffect.damage.ToString());
+			animationManager.queueAnimation(test);
+
+			if (pendingEffect.damage + pendingEffect.combatant.damage >= pendingEffect.combatant.health) {
+				//target.gameObject.GetComponent<Renderer>().material.color = new Color(0, 0, 0, 0.5f);
+				animationManager.queueAnimation(
+					new SimpleFadeOut(target.gameObject)
+				);
+			}
+		}
 		battleState.processActionInput(selectedHexXY);
 	}
 
