@@ -84,8 +84,6 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		hexGridRenderer.updateDisplay();
 
-		HexNodePathMap pathMap = new HexNodePathMap(gameState.battleState.hexGrid, gameState.battleState.battlefieldEntities);
-
 		animationManager = GetComponent<AnimationManager>();
 
 		//Center camera on arena.
@@ -134,7 +132,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			animationManager.onComplete = () => updateIndicatorPosition();
 		}
 
-		//Debug.Log("process next action: " + battleState.getActionState());
+		Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
 		switch (battleState.getActionState()) {
 			case CombatAction.SELECT_ACTION: {
 				//Show the card selection options
@@ -216,46 +214,25 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	}
 
 	private void commitMoveSelection() {
+		Debug.Log("commitMoveSelection");
 		hexGridRenderer.clearHilight();
 		hexGridRenderer.reDrawColor();
 		
 		EntityRenderer target = hexGridRenderer.getEntityRendererByName(battleState.getCurrentCombatant().name);
 
+		//Num of hex lengths (non-manhattan)
+		float d = Vector2.Distance(battleState.getCurrentCombatant().pos, hexPathRenderer.pathPos[0]);
 
-		//Vector3 from = hexGridRenderer.transform.TransformPoint(HexGridRenderer.getXYZPos(battleState.getCurrentCombatant().pos));
-		//Vector3 to = hexGridRenderer.transform.TransformPoint(HexGridRenderer.getXYZPos(selectedHexXY));
+		if (d > 0) {
+			d += 1 / d;
+			d /= 2;
 
-		Vector3 from = HexGridRenderer.getXYZPos(battleState.getCurrentCombatant().pos);
-		//from.y = from.y - HexGridRenderer.CELL_HEIGHT / 4;
-		Vector3 to = HexGridRenderer.getXYZPos(hexPathRenderer.pathPos[0]);
-		//to.y = to.y - HexGridRenderer.CELL_HEIGHT / 4;
+			Vector3 from = HexGridRenderer.getXYZPos(battleState.getCurrentCombatant().pos);
+			Vector3 to = HexGridRenderer.getXYZPos(hexPathRenderer.pathPos[0]);
 
-
-		//Debug.Log("from: " + from.x + ", " + from.y + ", " + from.z);
-		//Debug.Log("to: " + to.x + ", " + to.y + ", " + to.z);
-		/*
-		Vector3 actual = target.gameObject.transform.position;
-		Debug.Log("actual: " + actual.x + ", " + actual.y + ", " + actual.z);
-
-		target.gameObject.transform.localPosition = to;
-
-		Vector3 actual2 = target.gameObject.transform.position;
-		Debug.Log("actual2: " + actual2.x + ", " + actual2.y + ", " + actual2.z);
-		*/
-		
-		AnimationManager.MoveAnimation testMove;
-
-		float numLengths = Vector3.Distance(from, to) / HexGridRenderer.CELL_WIDTH;
-		logger.log("numLengths: " + numLengths);
-		float d = numLengths + (1 / numLengths);
-		d /= 2;
-		logger.log("seconds: " + d);
-		
-		animationManager.queueAnimation(new AnimationManager.MoveAnimation(target.gameObject, from, to, d));
-		
-
+			animationManager.queueAnimation(new AnimationManager.MoveAnimation(target.gameObject, from, to, d));
+		}
 		hexPathRenderer.gameObject.SetActive(false);
-		//uiInputState = DISABLED;
 		battleState.processActionInput(selectedHexXY);
 	}
 
@@ -323,7 +300,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 							//Temporary:
 							hilightSelectedHexXY();
 
-							HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState.battlefieldEntities);
+							HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState.getBlockedHexes());
 							pathMap.setOrigin(battleState.getCurrentCombatant().pos);
 							//Can only move within max range of the action.
 							HexNode dest = pathMap.getClosestHexNodeTo(hexPos, battleState.getCurrentAction().maxRange);
@@ -469,7 +446,6 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 					if (hexGridRenderer != null) {
 						Vector2Int hexPos = hexGridRenderer.getHexPosFromWorldPoint(hit.point);
 						if (hexPathRenderer.pathPos.Count > 0) {
-							//selectedHexXY = hexPathRenderer.pathPos[0];
 							selectedHexXY = hexPos;
 							commitMoveSelection();
 						}
@@ -545,5 +521,14 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		);
 	}
 
-	
+	private string getInputName() {
+		switch (uiInputState) {
+			case DISABLED: return "DISABLED";
+			case SELECT_CARD: return "SELECT CARD";
+			case SELECT_MOVE: return "SELECT MOVE";
+			case SELECT_TARGET: return "SELECT TARGET";
+			default: return "?";
+		}
+	}
+
 }

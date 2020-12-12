@@ -3,12 +3,13 @@ using UnityEngine;
 
 public class HexNodePathMap : NodePathMap {
 	
+	//Using a hash set to enforce unique entries.
 	public HashSet<Vector2Int> blockedHexes;
 
 	private Dictionary<Vector2Int, HexNode> hexNodes;
 
-	public HexNodePathMap(HexGrid hexGrid, List<BattlefieldEntity> battlefieldEntities) : base() {
-		blockedHexes = new HashSet<Vector2Int>();
+	public HexNodePathMap(HexGrid hexGrid, List<Vector2Int> blockedHexes) : base() {
+		this.blockedHexes = new HashSet<Vector2Int>(blockedHexes);
 
 		hexNodes = new Dictionary<Vector2Int, HexNode>();
 		foreach (Vector2Int hexPos in hexGrid.hexPos) {
@@ -39,11 +40,9 @@ public class HexNodePathMap : NodePathMap {
 		}
 
 		//For now we treat terrain statically. But in the future will need a way to update it.
-		foreach (BattlefieldEntity entity in battlefieldEntities) {
-			if (entity.isAlive() && entity.blocksMovement) {
-				blockedHexes.Add(entity.pos);
-			}
-		}
+		//foreach (Vector2Int hex in blockedHexes) {
+		//	this.blockedHexes.Add(hex);
+		//}
 
 		//Debug.Log("finished hex node path map nodes: " + hexNodes.Keys.Count);
 	}
