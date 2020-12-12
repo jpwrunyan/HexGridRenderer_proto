@@ -31,7 +31,7 @@ public class BattleState {
 
 	//A counter for explicit number of characters who have actively passed/folded. Not sure how to get around this yet...
 	//But running out of cards is distinct from actually passing...
-	private int passCount = 0;
+	public int passCount = 0;
 
 	//Pending actions that must be resolved during the current turn.
 	public List<Card.CardAction> pendingActions = new List<Card.CardAction>();
@@ -156,23 +156,25 @@ public class BattleState {
 				//Always account for this character's missing place as an offset?
 				passCount++;
 			}
-			
+
 			//Proceed to next character...
 			turn++;
-			/*
-			if (combatantIdTurnOrder.Count > 0) {
-				int test = (turn - passCount) % combatantIdTurnOrder.Count;
-				Debug.Log(
-					"turn: " + turn + " - passCount: " + passCount + " % combatantIds: " + combatantIdTurnOrder.Count + " = " + test + "\n" +
-					string.Join(", ", combatantIdTurnOrder) + " " +
-					"***next combatant should be: " + getCurrentCombatant().name + "(" + getCurrentCombatantId() + ")"
-				);
-			} else {
-				Debug.Log("**** should start new round!");
+			
+			//Astoundingly, this seems to be working smoothly. But if a bug emerges later, don't beat yourself up.
+			//The system may need to become more complex.
+			for (int i = 0; i < combatantIdTurnOrder.Count; i++) {
+				int combatantId = combatantIdTurnOrder[i];
+				//string combatantName = getCombatantById(combatantId).name;
+				//int health = getCombatantById(combatantId).health;
+				//int damage = getCombatantById(combatantId).damage;
+				//Debug.Log("combatant: " + combatantName + " " + (health - damage) + "/" + health);
+				if (getCombatantById(combatantId).isAlive() == false) {
+					bool removed = combatantIdTurnOrder.Remove(combatantId);
+					//Debug.Log("tried to remove: " + combatantName + " " + removed);
+					i--;
+				}
 			}
-			*/
 
-			//if (turn == combatantIdTurnOrder.Count) {
 			if (combatantIdTurnOrder.Count == 0) {
 				round++;
 				turn = 0;
@@ -181,18 +183,15 @@ public class BattleState {
 				//New round means draw new cards...
 				//For now all players draw immediately??? Will probably change this.
 				foreach (KeyValuePair<int, Deck> entry in combatantIdDecks) {
-					if (entry.Value.getDrawsRemaining() < 4) {
-						entry.Value.reshuffle();
+					int combatantId = entry.Key;
+					if (getCombatantById(combatantId).isAlive()) {
+						if (entry.Value.getDrawsRemaining() < 4) {
+							entry.Value.reshuffle();
+						}
+						entry.Value.drawHand();
+						combatantIdTurnOrder.Add(combatantId);
 					}
-					entry.Value.drawHand();
-					combatantIdTurnOrder.Add(entry.Key);
 				}
-				/*
-				foreach (Deck deck in combatantIdDecks.Values) {
-					Debug.Log("draw a card...");
-					deck.draw(1);
-				}
-				*/
 			}
 		}
 		//Input module - instance.processNextAction()
@@ -205,15 +204,16 @@ public class BattleState {
 	/// </summary>
 	/// <param name="target">Target hex position of the action</param>
 	public List<CombatEffect> determineCombatEffects(Vector2Int targetHex) {
-		Debug.Log("determineCombatEffects");
+		//Debug.Log("determineCombatEffects");
 
 		List<CombatEffect> combatEffects = new List<CombatEffect>();
 		Card.CardAction combatAction = getCurrentAction();
 		Vector2Int[] affectedHexes = HexGrid.getXYsWithinRadius(targetHex.x, targetHex.y, getCurrentAction().radius);
-
+		//Debug.Log("affectedHexes: " + affectedHexes.Length);
 		foreach (BattlefieldEntity entity in battlefieldEntities) {
 			if (entity.isAlive()) {
 				for (int i = 0; i < affectedHexes.Length; i++) {
+					//Debug.Log("Checking: " + entity.pos);
 					if (entity.pos.Equals(affectedHexes[i])) {
 						CombatEffect combatEffect = new CombatEffect();
 						combatEffect.combatant = entity;
@@ -221,17 +221,22 @@ public class BattleState {
 						combatEffects.Add(combatEffect);
 					}
 				}
+			} else {
+				//Debug.Log("Not alive: " + entity.name);
 			}
 		}
-
+		//Debug.Log("combat effects: " + combatEffects.Count);
 		return combatEffects;
 	}
 
 	private void applyCombatEffects(List<CombatEffect> combatEffects) {
+		Debug.Log("apply combat effects");
 		foreach (CombatEffect effect in combatEffects) {
 			//For now that's it. We're just doing damage.
 			effect.combatant.damage += effect.damage;
+			Debug.Log("apply effect to: " + effect.combatant.name + " " + (effect.combatant.health - effect.combatant.damage) + "/" + effect.combatant.health);
 		}
+		Debug.Log("Turn order: " + System.String.Join(",", combatantIdTurnOrder));
 	}
 
 	//Input state will be used to figure out just exactly how to modify the state based on input commands.
@@ -253,8 +258,12 @@ public class BattleState {
 	
 	public int getCurrentCombatantId() {
 		//Debug.Log("turn: " + turn + " pass count: " + passCount + " turn order count: " + combatantIdTurnOrder.Count);
-		return combatantIdTurnOrder[(turn - passCount) % combatantIdTurnOrder.Count];
+		return combatantIdTurnOrder[getCurrentTurnIndex()];
 		//return combatantIdTurnOrder[turn % combatantIdTurnOrder.Count];
+	}
+
+	private int getCurrentTurnIndex() {
+		return (turn - passCount) % combatantIdTurnOrder.Count;
 	}
 
 	public BattlefieldEntity getCurrentCombatant() {

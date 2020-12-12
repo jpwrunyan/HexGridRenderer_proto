@@ -76,6 +76,7 @@ public class StartupLoader : MonoBehaviour {
 			character.movementModifier = 0;
 			character.blocksMovement = true;
 			character.blocksVision = true;
+			character.health = 4;
 			character.image = "gunslinger_male";
 
 			battlefieldEntities.Add(character);
@@ -84,8 +85,11 @@ public class StartupLoader : MonoBehaviour {
 
 			Card card;
 			card = new Card();
-			card.title = "Character 1\nMove 1";
+			card.title = "Character 1\nMove and Attack";
 			card.move = 1;
+			card.attack = 2;
+			card.minRange = 1;
+			card.maxRange = 1;
 			cards.Add(card);
 
 			card = new Card();
@@ -99,7 +103,7 @@ public class StartupLoader : MonoBehaviour {
 			cards.Add(card);
 
 			card = new Card();
-			card.title = "Character 1\nAttack";
+			card.title = "Character 1\nAttack 4";
 			card.attack = 4;
 			card.minRange = 1;
 			card.maxRange = 5;
@@ -116,7 +120,7 @@ public class StartupLoader : MonoBehaviour {
 				deck
 			);
 			deck.drawHand();
-
+			
 			//Character 2
 			character = new BattlefieldEntity();
 			character.name = "Medic Female";
@@ -124,6 +128,7 @@ public class StartupLoader : MonoBehaviour {
 			character.movementModifier = 0;
 			character.blocksMovement = true;
 			character.blocksVision = true;
+			character.health = 4;
 			character.image = "medic_female";
 
 			battlefieldEntities.Add(character);
@@ -164,6 +169,7 @@ public class StartupLoader : MonoBehaviour {
 			character.movementModifier = 0;
 			character.blocksMovement = true;
 			character.blocksVision = true;
+			character.health = 4;
 			character.image = "gunslinger_female";
 
 			battlefieldEntities.Add(character);
@@ -199,13 +205,14 @@ public class StartupLoader : MonoBehaviour {
 			);
 			deck.drawHand();
 
-			//Character 3
+			//Character 4
 			character = new BattlefieldEntity();
 			character.name = "Merc Female";
 			character.pos = new Vector2Int(2, 4);
 			character.movementModifier = 0;
 			character.blocksMovement = true;
 			character.blocksVision = true;
+			character.health = 4;
 			character.image = "merc_female";
 
 			battlefieldEntities.Add(character);
@@ -218,9 +225,9 @@ public class StartupLoader : MonoBehaviour {
 			cards.Add(card);
 
 			card = new Card();
-			card.title = "Throw Grenade";
+			card.title = "Throw Grenade 4";
 			card.attack = 4;
-			card.minRange = 2;
+			card.minRange = 1;
 			card.maxRange = 4;
 			card.radius = 1;
 			cards.Add(card);
@@ -235,6 +242,7 @@ public class StartupLoader : MonoBehaviour {
 				deck
 			);
 			deck.drawHand();
+			
 			//Finish with characters
 
 

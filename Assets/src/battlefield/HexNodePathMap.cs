@@ -40,7 +40,7 @@ public class HexNodePathMap : NodePathMap {
 
 		//For now we treat terrain statically. But in the future will need a way to update it.
 		foreach (BattlefieldEntity entity in battlefieldEntities) {
-			if (entity.blocksMovement) {
+			if (entity.isAlive() && entity.blocksMovement) {
 				blockedHexes.Add(entity.pos);
 			}
 		}
