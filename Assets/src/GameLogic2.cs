@@ -17,7 +17,7 @@ using UnityEngine.UI;
 /// </summary>
 [RequireComponent(typeof(AnimationManager))]
 public class GameLogic2 : MonoBehaviour, InputSource {
-	//The follow are UI state. NOT game or battle state.
+	//The following are UI state. NOT game or battle state.
 	private const int DISABLED = 0; //when in disabled state, input should be automatically determined.
 	private const int SELECT_CARD = 1;
 	private const int SELECT_MOVE = 2;
@@ -29,10 +29,12 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	public HexPathRenderer hexPathRenderer;
 	public GameObject indicator;
 
+	public Text infoText;
+	public Text deckText;
+	public Text discardText;
 	public Button passButton;
 
-	public Text infoText;
-
+	
 	public BattleState battleState;
 	
 	//Input state determines what controls and display are enabled.
@@ -132,7 +134,11 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			animationManager.onComplete = () => updateIndicatorPosition();
 		}
 
-		Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
+		//Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
+
+		deckText.text = "Deck: " + battleState.getCurrentCombatantDeck().getDrawsRemaining();
+		discardText.text = "Discard: " + battleState.getCurrentCombatantDeck().getDiscardCount();
+
 		switch (battleState.getActionState()) {
 			case CombatAction.SELECT_ACTION: {
 				//Show the card selection options
@@ -186,8 +192,6 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		Debug.Log("update indicator " + battleState.getCurrentCombatant().pos);
 		updateIndicatorPosition();
-		
-		
 	}
 
 	private void updateIndicatorPosition() {
@@ -240,22 +244,26 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		hexGridRenderer.clearHilight();
 		hexGridRenderer.clearHilight2();
 		hexGridRenderer.reDrawColor();
-		//TODO: determine changes and then animate them.
-		//Debug.Log("commit target selection");
-		List<CombatEffect> pendingEffects = battleState.determineCombatEffects(selectedHexXY);
-		foreach (CombatEffect pendingEffect in pendingEffects) {
-			//There's a smarter way to do this.
-			EntityRenderer target = hexGridRenderer.getEntityRendererByName(pendingEffect.combatant.name);
-			SimpleTextAnimation test = new SimpleTextAnimation(target.gameObject.transform.position, pendingEffect.damage.ToString());
-			animationManager.queueAnimation(test);
+		if (battleState.isTargetValid(selectedHexXY)) {
+			List<CombatEffect> pendingEffects = battleState.determineCombatEffects(selectedHexXY);
+			foreach (CombatEffect pendingEffect in pendingEffects) {
+				//There's a smarter way to do this.
+				EntityRenderer target = hexGridRenderer.getEntityRendererByName(pendingEffect.combatant.name);
+				SimpleTextAnimation test = new SimpleTextAnimation(target.gameObject.transform.position, pendingEffect.damage.ToString());
+				animationManager.queueAnimation(test);
 
-			if (pendingEffect.damage + pendingEffect.combatant.damage >= pendingEffect.combatant.health) {
-				//target.gameObject.GetComponent<Renderer>().material.color = new Color(0, 0, 0, 0.5f);
-				animationManager.queueAnimation(
-					new SimpleFadeOut(target.gameObject)
-				);
+				if (pendingEffect.damage + pendingEffect.combatant.damage >= pendingEffect.combatant.health) {
+					//target.gameObject.GetComponent<Renderer>().material.color = new Color(0, 0, 0, 0.5f);
+					animationManager.queueAnimation(
+						new SimpleFadeOut(target.gameObject)
+					);
+				}
 			}
+		} else {
+			//We consider this to be skipped input.
 		}
+			
+		
 		battleState.processActionInput(selectedHexXY);
 	}
 
@@ -467,6 +475,11 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 						if (hexGridRenderer.isHilighted2(hexPos)) {
 							//selectedHexXY = hexPathRenderer.pathPos[0];
 							selectedHexXY = hexPos;
+							commitTargetSelection();
+						} else if (hexPos.Equals(battleState.getCurrentCombatant().pos)) {
+							//Consider this to have been a cancelled input (ie skip the targeting).
+							//This is a temporary input solution. There should be a better way to select null target.
+							selectedHexXY = battleState.getCurrentCombatant().pos;
 							commitTargetSelection();
 						}
 					}

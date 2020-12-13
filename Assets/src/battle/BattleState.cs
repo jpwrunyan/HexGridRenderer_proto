@@ -119,21 +119,9 @@ public class BattleState {
 			case CombatAction.MELEE_ATTACK:
 			case CombatAction.RANGE_ATTACK: {
 				Debug.Log("process attack");
-				if (
-					new List<Vector2Int>(
-						HexGrid.getVisibleHexes(
-							getCurrentCombatant().pos,
-							getBlockedHexes(1).ToArray(),
-							getCurrentAction().minRange,
-							getCurrentAction().maxRange
-						)
-					).Contains((Vector2Int)input)
-				) {
+				if (isTargetValid((Vector2Int)input)) {
 					//Valid input.
-					//TODO: determine changes and apply them
 					applyCombatEffects(determineCombatEffects((Vector2Int)input));
-				} else {
-					//Consider this cancelled and move to next action...
 				}
 				actionPhase++;
 				break;
@@ -197,6 +185,23 @@ public class BattleState {
 		}
 		//Input module - instance.processNextAction()
 		inputSource.processNextAction(this);
+	}
+
+	/// <summary>
+	/// Determines whether a target hex will be valid or not.
+	/// Currently only checks visibility, but may be expanded later.
+	/// </summary>
+	/// <param name="target">the target hex</param>
+	/// <returns></returns>
+	public bool isTargetValid(Vector2Int target) {
+		return new List<Vector2Int>(
+			HexGrid.getVisibleHexes(
+				getCurrentCombatant().pos,
+				getBlockedHexes(1).ToArray(),
+				getCurrentAction().minRange,
+				getCurrentAction().maxRange
+			)
+		).Contains(target);
 	}
 
 	/// <summary>

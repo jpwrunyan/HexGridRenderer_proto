@@ -89,6 +89,10 @@ public class Deck {
 		discardPile.Add(card);
 	}
 
+	public int getDiscardCount() {
+		return discardPile.Count;
+	}
+
 	/// <summary>
 	/// Remove a card from the hand entirely from play.
 	/// </summary>
