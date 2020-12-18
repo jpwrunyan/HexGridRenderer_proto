@@ -49,6 +49,8 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 	private AnimationManager animationManager;
 
+	private SimpleAutoInput simpleAutoInput = new SimpleAutoInput();
+
 	private void Awake() {
 
 		GameState gameState = GameState.getInstance();
@@ -123,6 +125,9 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	/// It is called by battle state once this input source is assigned to it.
 	/// </summary>
 	public void processNextAction(BattleState battleState) {
+		//Debug.Log("processNextAction: " + battleState.getCurrentAction().type.ToString());
+		Debug.Log("processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString());
+
 		if (animationManager.isPlaying && battleState.pendingActions.Count > battleState.actionPhase) {
 			indicator.SetActive(false);
 			//Disable and delay next action until animation(s) are complete.
@@ -136,49 +141,9 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		//Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
 
+		//Update display information
 		deckText.text = "Deck: " + battleState.getCurrentCombatantDeck().getDrawsRemaining();
 		discardText.text = "Discard: " + battleState.getCurrentCombatantDeck().getDiscardCount();
-
-		switch (battleState.getActionState()) {
-			case CombatAction.SELECT_ACTION: {
-				//Show the card selection options
-				selectedCardRenderer.gameObject.SetActive(false);
-				cardListDisplay.gameObject.SetActive(true);
-				cardListDisplay.clearSelection();
-				
-				List<Card> cards = battleState.getCurrentCombatantDeck().getHand();
-				cardListDisplay.setCards(cards);
-				uiInputState = SELECT_CARD;
-				break;
-			}
-			case CombatAction.MOVE: {
-				hexPathRenderer.gameObject.SetActive(true);
-				hexPathRenderer.pathPos = new List<Vector2Int>();
-				hexPathRenderer.updateOnDemand();
-				uiInputState = SELECT_MOVE;
-				break;
-			}
-			case CombatAction.MELEE_ATTACK:
-			case CombatAction.RANGE_ATTACK: {
-				validTargets = HexGrid.getVisibleHexes(
-					battleState.getCurrentCombatant().pos,
-					battleState.getBlockedHexes(1).ToArray(),
-					battleState.getCurrentAction().minRange,
-					battleState.getCurrentAction().maxRange
-				);
-				hexGridRenderer.setHilight2(
-					validTargets
-				);
-				hexGridRenderer.reDrawColor();
-				uiInputState = SELECT_TARGET;
-				break;
-			}
-			default: {
-				uiInputState = DISABLED;
-				Debug.Log("ui state is unknown");
-				break;
-			}
-		}
 
 		infoText.text = "Round " + battleState.round + " Turn " + battleState.turn + " - " + battleState.getCurrentCombatant().name + " " + getInputStateName() + "\n";
 		infoText.text += "[";
@@ -192,6 +157,70 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		Debug.Log("update indicator " + battleState.getCurrentCombatant().pos);
 		updateIndicatorPosition();
+		Debug.Log("accept input");
+		//Accept input
+		if (!battleState.getCurrentCombatant().isAI) {
+			switch (battleState.getActionState()) {
+				case CombatAction.SELECT_ACTION: {
+					//Show the card selection options
+					selectedCardRenderer.gameObject.SetActive(false);
+					cardListDisplay.gameObject.SetActive(true);
+					cardListDisplay.clearSelection();
+				
+					List<Card> cards = battleState.getCurrentCombatantDeck().getHand();
+					cardListDisplay.setCards(cards);
+					uiInputState = SELECT_CARD;
+					break;
+				}
+				case CombatAction.MOVE: {
+					hexPathRenderer.gameObject.SetActive(true);
+					hexPathRenderer.pathPos = new List<Vector2Int>();
+					hexPathRenderer.updateOnDemand();
+					uiInputState = SELECT_MOVE;
+					break;
+				}
+				case CombatAction.MELEE_ATTACK:
+				case CombatAction.RANGE_ATTACK: {
+					validTargets = HexGrid.getVisibleHexes(
+						battleState.getCurrentCombatant().pos,
+						battleState.getBlockedHexes(1).ToArray(),
+						battleState.getCurrentAction().minRange,
+						battleState.getCurrentAction().maxRange
+					);
+					hexGridRenderer.setHilight2(
+						validTargets
+					);
+					hexGridRenderer.reDrawColor();
+					uiInputState = SELECT_TARGET;
+					break;
+				}
+				default: {
+					uiInputState = DISABLED;
+					Debug.Log("ui state is unknown");
+					break;
+				}
+			}
+		} else {
+			uiInputState = DISABLED;
+			if (battleState.getActionState().Equals(CombatAction.SELECT_ACTION)) {
+				Debug.Log("auto select card");
+				simpleAutoInput.processNextAction(battleState);
+			} else if (battleState.getActionState().Equals(CombatAction.MOVE)) {
+				Debug.Log("auto select move");
+				//simpleAutoInput.processNextAction(battleState);
+				selectedHexXY = simpleAutoInput.getMoveInput(battleState);
+				updateHexPathRenderer();
+				commitMoveSelection();
+			} else if (
+				battleState.getActionState().Equals(CombatAction.MELEE_ATTACK) || 
+				battleState.getActionState().Equals(CombatAction.RANGE_ATTACK)
+			) {
+				Debug.Log("auto select target");
+				selectedHexXY = simpleAutoInput.getSelectTargetInput(battleState);
+				Debug.Log("select target at: " + selectedHexXY.x + ", " + selectedHexXY.y);
+				commitTargetSelection();
+			}
+		}
 	}
 
 	private void updateIndicatorPosition() {
@@ -218,13 +247,17 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	}
 
 	private void commitMoveSelection() {
-		Debug.Log("commitMoveSelection");
+		Debug.Log("commitMoveSelection " + battleState.getCurrentCombatant().name);
 		hexGridRenderer.clearHilight();
 		hexGridRenderer.reDrawColor();
 		
 		EntityRenderer target = hexGridRenderer.getEntityRendererByName(battleState.getCurrentCombatant().name);
 
 		//Num of hex lengths (non-manhattan)
+
+
+		//This part needs to be fixed:
+		//For auto-movement, we don't use the hexPathRenderer... arg. So complicated. Movement should fall under combat effects.
 		float d = Vector2.Distance(battleState.getCurrentCombatant().pos, hexPathRenderer.pathPos[0]);
 
 		if (d > 0) {
@@ -307,18 +340,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 							selectedHexXY = hexPos;
 							//Temporary:
 							hilightSelectedHexXY();
-
-							HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState.getBlockedHexes());
-							pathMap.setOrigin(battleState.getCurrentCombatant().pos);
-							//Can only move within max range of the action.
-							HexNode dest = pathMap.getClosestHexNodeTo(hexPos, battleState.getCurrentAction().maxRange);
-							List<Vector2Int> path = new List<Vector2Int>();
-							while (dest != null) {
-								path.Add(dest.hexPos);
-								dest = (HexNode)dest.prevNode;
-							}
-							hexPathRenderer.pathPos = path;
-							hexPathRenderer.updateOnDemand();
+							updateHexPathRenderer();
 						}
 					}
 				}
@@ -396,25 +418,12 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	private bool passSelected = false;
 
 	private void Click_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj) {
+		Debug.Log("Click performed " + getInputName() + " " + battleState.getCurrentCombatant().name);
 		bool isDown = obj.ReadValueAsButton();
 		Vector2 pos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
 		if (uiInputState == SELECT_CARD) {
 			if (isDown) {
 				//Insert: if not deselecting the selected card...
-
-				/*
-				//Does not work at all:
-				Vector2 screenPos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
-
-				RaycastHit2D hitInfo = Physics2D.Raycast(screenPos, Vector2.zero);
-
-				if (hitInfo.transform != null) {
-					Debug.Log(hitInfo.transform.gameObject.name);
-				} else {
-					Debug.Log("Nothing");
-				}
-				*/
-
 
 				//This gonna have to be fixed later...
 				if (isOverPassButton(pos)) {
@@ -485,6 +494,8 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 					}
 				}
 			}
+		} else {
+			Debug.Log("Don't do anything.");
 		}
 	}
 
@@ -495,6 +506,20 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	//----------------------------------------
 	// Misc.
 	//----------------------------------------
+
+	private void updateHexPathRenderer() {
+		HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState.getBlockedHexes());
+		pathMap.setOrigin(battleState.getCurrentCombatant().pos);
+		//Can only move within max range of the action.
+		HexNode dest = pathMap.getClosestHexNodeTo(selectedHexXY, battleState.getCurrentAction().maxRange);
+		List<Vector2Int> path = new List<Vector2Int>();
+		while (dest != null) {
+			path.Add(dest.hexPos);
+			dest = (HexNode)dest.prevNode;
+		}
+		hexPathRenderer.pathPos = path;
+		hexPathRenderer.updateOnDemand();
+	}
 
 	private void hilightSelectedHexXY() {
 		hexGridRenderer.clearHilight();

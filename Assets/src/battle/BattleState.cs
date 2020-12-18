@@ -67,6 +67,7 @@ public class BattleState {
 	/// <param name="p">selected point</param>
 	public void processActionInput(Vector2Int p) {
 		//Assumes we're moving the current turn combatant.
+		Debug.Log("processActionInput: " + getCurrentCombatant().name + p.x + ", " + p.y + " z set to: " + getCurrentCombatantId());
 		processActionInput(new Vector3Int(p.x, p.y, getCurrentCombatantId()));
 	}
 
@@ -111,8 +112,13 @@ public class BattleState {
 				pathMap.setOrigin(getCurrentCombatant().pos);
 				//Can only move within max range of the action.
 				HexNode dest = pathMap.getClosestHexNodeTo((Vector2Int)input, getCurrentAction().maxRange);
-				
-				battlefieldEntities[input.z].pos = dest.hexPos;
+
+				if (dest != null) {
+					battlefieldEntities[input.z].pos = dest.hexPos;
+				} else {
+					Debug.Log("Invalid input. Do not move.");
+				}
+
 				actionPhase++;
 				break;
 			}

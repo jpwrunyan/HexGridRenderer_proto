@@ -130,6 +130,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "medic_female";
+			character.isAI = true;
 
 			battlefieldEntities.Add(character);
 
@@ -137,7 +138,7 @@ public class StartupLoader : MonoBehaviour {
 
 			card = new Card();
 			card.title = "Medic Move 1";
-			card.move = 2;
+			card.move = 1;
 			cards.Add(card);
 
 			card = new Card();
@@ -214,6 +215,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "merc_female";
+			character.isAI = true;
 
 			battlefieldEntities.Add(character);
 
