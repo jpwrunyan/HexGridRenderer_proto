@@ -89,7 +89,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		hexGridRenderer.updateDisplay();
 
 		animationManager = GetComponent<AnimationManager>();
-
+		
 		//Center camera on arena.
 		//float cameraStartX = 
 		Vector3 centerHexPos = HexGridRenderer.getXYZPos(4, 5);
@@ -126,8 +126,15 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	/// </summary>
 	public void processNextAction(BattleState battleState) {
 		//Debug.Log("processNextAction: " + battleState.getCurrentAction().type.ToString());
-		Debug.Log("processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString());
+		if (battleState.getCombatantsInTurnOrder().Count == 0) {
+			//Somehow, all combatants are no longer active (killed each other?)
+			//This battle cannot continue.
+			Debug.Log("All combatants are dead. Cannot process actions.");
+			return;
+		}
 
+		Debug.Log("processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString());
+		string sourceName = "processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString();
 		if (animationManager.isPlaying && battleState.pendingActions.Count > battleState.actionPhase) {
 			indicator.SetActive(false);
 			//Disable and delay next action until animation(s) are complete.
@@ -136,7 +143,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			return;
 		} else {
 			indicator.SetActive(true);
-			animationManager.onComplete = () => updateIndicatorPosition();
+			animationManager.onComplete = () => updateIndicatorPosition(sourceName);
 		}
 
 		//Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
@@ -156,7 +163,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		infoText.text += " - passcount: " + battleState.passCount;
 
 		Debug.Log("update indicator " + battleState.getCurrentCombatant().pos);
-		updateIndicatorPosition();
+		updateIndicatorPosition("processNextAction");
 		Debug.Log("accept input");
 		//Accept input
 		if (!battleState.getCurrentCombatant().isAI) {
@@ -223,8 +230,15 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		}
 	}
 
-	private void updateIndicatorPosition() {
+	private int indicatorQuitCount = 0;
+
+	private void updateIndicatorPosition(string source) {
 		//Update inidicator
+		if (battleState.getCombatantsInTurnOrder().Count == 0) {
+			Debug.Log("All combatants have been disabled. Disabling turn indicator. " + indicatorQuitCount++ + " source: " + source);
+			indicator.SetActive(false);
+			return;
+		}
 		Vector3 pivot = hexGridRenderer.getEntityRendererByName(battleState.getCurrentCombatant().name).transform.position;
 		indicator.transform.rotation = Camera.main.transform.rotation;
 		Vector3 point = pivot + (Camera.main.transform.up * 50);
@@ -247,7 +261,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	}
 
 	private void commitMoveSelection() {
-		Debug.Log("commitMoveSelection " + battleState.getCurrentCombatant().name);
+		Debug.Log("commitMoveSelection " + battleState.getCurrentCombatant().name + " move to: " + selectedHexXY);
 		hexGridRenderer.clearHilight();
 		hexGridRenderer.reDrawColor();
 		
@@ -258,16 +272,20 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		//This part needs to be fixed:
 		//For auto-movement, we don't use the hexPathRenderer... arg. So complicated. Movement should fall under combat effects.
-		float d = Vector2.Distance(battleState.getCurrentCombatant().pos, hexPathRenderer.pathPos[0]);
+		if (hexPathRenderer.pathPos.Count == 0) {
+			Debug.Log("TERRIBE PROBLEM!");
+		} else {
+			float d = Vector2.Distance(battleState.getCurrentCombatant().pos, hexPathRenderer.pathPos[0]);
 
-		if (d > 0) {
-			d += 1 / d;
-			d /= 2;
+			if (d > 0) {
+				d += 1 / d;
+				d /= 2;
 
-			Vector3 from = HexGridRenderer.getXYZPos(battleState.getCurrentCombatant().pos);
-			Vector3 to = HexGridRenderer.getXYZPos(hexPathRenderer.pathPos[0]);
+				Vector3 from = HexGridRenderer.getXYZPos(battleState.getCurrentCombatant().pos);
+				Vector3 to = HexGridRenderer.getXYZPos(hexPathRenderer.pathPos[0]);
 
-			animationManager.queueAnimation(new AnimationManager.MoveAnimation(target.gameObject, from, to, d));
+				animationManager.queueAnimation(new AnimationManager.MoveAnimation(target.gameObject, from, to, d));
+			}
 		}
 		hexPathRenderer.gameObject.SetActive(false);
 		battleState.processActionInput(selectedHexXY);
@@ -418,8 +436,13 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	private bool passSelected = false;
 
 	private void Click_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj) {
-		Debug.Log("Click performed " + getInputName() + " " + battleState.getCurrentCombatant().name);
 		bool isDown = obj.ReadValueAsButton();
+		if (battleState.getCombatantsInTurnOrder().Count > 0) {
+			Debug.Log("Click performed " + getInputName() + " " + battleState.getCurrentCombatant().name);
+		} else {
+			Debug.Log("Click performed but combatants are all gone now. (Maybe this is a residual button release? Click is down: " + isDown);
+			return;
+		}
 		Vector2 pos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
 		if (uiInputState == SELECT_CARD) {
 			if (isDown) {

@@ -12,6 +12,7 @@ public class AnimationManager : MonoBehaviour {
 	//----------------------------------------
 
 	public System.Action onComplete;
+	//or Action<BaseAnimation> ? So we can check the completion based on specific animations that trigger it?
 	
 	public bool isPlaying {
 		get => animationQueue.Count > 0;
@@ -52,6 +53,8 @@ public class AnimationManager : MonoBehaviour {
 			//owner.dispatchEvent(new AnimationEvent(AnimationEvent.COMPLETE, animation));
 
 			//If onComplete is not null, invoke it.
+			//Note: This may not be the right place for this because it loses track of what actual BaseAnimation was called.
+			//Might be better to only call if the animation queue is empty???
 			onComplete?.Invoke();
 		}
 	}

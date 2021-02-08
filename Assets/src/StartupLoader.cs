@@ -172,6 +172,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "gunslinger_female";
+			character.isAI = true;
 
 			battlefieldEntities.Add(character);
 
@@ -215,7 +216,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "merc_female";
-			character.isAI = true;
+			character.isAI = false;
 
 			battlefieldEntities.Add(character);
 

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using UnityEngine;
 public class NodePathMap {
 	
 	protected Dictionary<PathableNode, HashSet<PathableNode>> nodeMap;
@@ -39,8 +39,24 @@ public class NodePathMap {
 				if (travelCost < adjNode.travelCost) {
 					adjNode.travelCost = travelCost;
 					adjNode.prevNode = currentNode;
+				} else if (float.IsInfinity(travelCost)) {
+					Debug.Log("adjNode trav cost: " + adjNode.travelCost + " curNode trav cost: " + currentNode.travelCost);
+					/*
+					 //infinite recursion for some asshole reason
+
+					 else if (float.IsInfinity(travelCost)) {
+						//It's not like you'll ever be able to move here in practice.
+						//But to avoid null pointers in travel paths, it needs a prev node regardless.
+						//This also allows players to select blocked terrain and move "toward" it if not on to it exactly.
+						if (adjNode.prevNode == null) {
+							adjNode.travelCost = float.MaxValue;
+							adjNode.prevNode = currentNode;
+						}
+						*/
+					}
+					
 				}
-			}
+
 			priorityQueue.Sort((PathableNode a, PathableNode b) => a.travelCost.CompareTo(b.travelCost));
 			currentNode = priorityQueue[0];
 			priorityQueue.RemoveAt(0);

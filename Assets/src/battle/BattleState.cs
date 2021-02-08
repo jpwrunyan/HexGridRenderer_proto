@@ -189,8 +189,13 @@ public class BattleState {
 				}
 			}
 		}
-		//Input module - instance.processNextAction()
-		inputSource.processNextAction(this);
+		if (round < 20) {
+			//Input module - instance.processNextAction()
+			inputSource.processNextAction(this);
+		} else {
+			Debug.Log("need to stop");
+			return;
+		}
 	}
 
 	/// <summary>

@@ -25,7 +25,13 @@ public class SimpleAutoInput : InputSource {
 	}
 
 	public Vector2Int getMoveInput(BattleState battleState) {
-		return battleState.hexGrid.hexPos[0];
+		//Temporary, should actually be able to move toward blocked hexes.
+		int i = 0;
+		while (battleState.getBlockedHexes().Contains(battleState.hexGrid.hexPos[i])) {
+			//Find a hex that isn't blocked.
+			i++;
+		}
+		return battleState.hexGrid.hexPos[i];
 	}
 
 	public Vector2Int getSelectTargetInput(BattleState battleState) {
