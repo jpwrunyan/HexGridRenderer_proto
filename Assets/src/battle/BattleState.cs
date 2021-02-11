@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -17,11 +18,12 @@ public class BattleState {
 	public List<BattlefieldEntity> battlefieldEntities;
 
 	//A dictionary tracking a list of cards associated with each combatant id.
-	//TODO: replace the List<Card> with a Deck which manages draw, discard, and in-hand data.
 	//Doubles as a means to keep track of active combatants.
 	public Dictionary<int, Deck> combatantIdDecks;
 
-	
+	//A dictionary tracking combatant id and which other combatant id's they are allied with.
+	public Dictionary<int, List<int>> allies;
+
 	//The current round of combat.
 	//Combat begins at round 0. 
 	public int round = 0;
@@ -42,15 +44,59 @@ public class BattleState {
 	//A list of combatant ids and the order in which they take their turn for the current round.
 	//The id corresponds to the index of the battlefieldEntities list.
 	//The turn value determines which combatant in the list is currently taking their turn.
-	public List<int> combatantIdTurnOrder;
+	private List<int> combatantIdTurnOrder;
 
 	private InputSource inputSource;
+
+	public BattleState() {
+		combatantIdTurnOrder = new List<int>();
+		combatantIdDecks = new Dictionary<int, Deck>();
+		allies = new Dictionary<int, List<int>>();
+	}
 
 	public void setInputSource(InputSource inputSource, bool start=true) {
 		this.inputSource = inputSource;
 		if (start) {
 			inputSource.processNextAction(this);
 		}
+	}
+
+	public int addActiveCombatant(BattlefieldEntity combatant, Deck deck) {
+		int combatantId = battlefieldEntities.Count;
+		battlefieldEntities.Add(combatant);
+		allies.Add(combatantId, new List<int>());
+		combatantIdTurnOrder.Add(combatantId);
+		combatantIdDecks.Add(combatantId, deck);
+		deck.drawHand();
+		return combatantId;
+	}
+
+	/// <summary>
+	/// Determine if combat is resolved.
+	/// Either everyone is dead or only allies remain.
+	/// </summary>
+	/// <returns></returns>
+	public bool isCombatOver() {
+		//If after all the checks no one is alive, this will return true.
+		bool isAnyoneAlive = false;
+		//Basically a simple check of each combatant against the other to see if they are friends.
+		int[] activeCombatantIds = combatantIdDecks.Keys.ToArray();
+		for (int i = 0; i < activeCombatantIds.Length - 1; i++) {
+			int combatantId = activeCombatantIds[i];
+			if (getCombatantById(combatantId).isAlive()) {
+				isAnyoneAlive = true;
+				List<int> allies = this.allies[combatantId];
+				for (int j = i + 1; j < activeCombatantIds.Length; j++) {
+					if (!allies.Contains(activeCombatantIds[j])) {
+						//Debug.Log("X Combatant " + combatantId + " is NOT friends with " + activeCombatantIds[j]);
+						return false;
+					} else {
+						//Debug.Log("Combatant " + combatantId + " is friends with " + activeCombatantIds[j]);
+					}
+				}
+			}
+		}
+		return !isAnyoneAlive;
 	}
 
 	/// <summary>
@@ -67,6 +113,7 @@ public class BattleState {
 	/// <param name="p">selected point</param>
 	public void processActionInput(Vector2Int p) {
 		//Assumes we're moving the current turn combatant.
+		//Debug.Log("processActionInput: " + getCurrentCombatant().name + p.x + ", " + p.y + " z set to: " + getCurrentCombatantId());
 		processActionInput(new Vector3Int(p.x, p.y, getCurrentCombatantId()));
 	}
 
@@ -80,7 +127,7 @@ public class BattleState {
 			case CombatAction.SELECT_ACTION: {
 				//Card index is the input.x value.
 				//change the deck accordingly.
-				Debug.Log("process select action");
+				//Debug.Log("process select action");
 				if (input.x == -1) {
 					//Player folded.
 					pendingActions = new List<Card.CardAction>();
@@ -111,14 +158,19 @@ public class BattleState {
 				pathMap.setOrigin(getCurrentCombatant().pos);
 				//Can only move within max range of the action.
 				HexNode dest = pathMap.getClosestHexNodeTo((Vector2Int)input, getCurrentAction().maxRange);
-				
-				battlefieldEntities[input.z].pos = dest.hexPos;
+
+				if (dest != null) {
+					battlefieldEntities[input.z].pos = dest.hexPos;
+				} else {
+					Debug.Log("Invalid input. Do not move.");
+				}
+
 				actionPhase++;
 				break;
 			}
 			case CombatAction.MELEE_ATTACK:
 			case CombatAction.RANGE_ATTACK: {
-				Debug.Log("process attack");
+				//Debug.Log("process attack");
 				if (isTargetValid((Vector2Int)input)) {
 					//Valid input.
 					applyCombatEffects(determineCombatEffects((Vector2Int)input));
@@ -139,42 +191,66 @@ public class BattleState {
 			//This is a potentially buggy way to do this... be careful.
 			if (getCurrentCombatantDeck().getHand().Count == 0) {
 				//Ran out of cards on last action.
+				Debug.Log(
+					"passing this char since they have no more cards - id: " + 
+					getCurrentCombatantId() + 
+					" name: " + 
+					getCurrentCombatant().name + 
+					" deck: " + 
+					getCurrentCombatantDeck().name
+				);
 				combatantIdTurnOrder.Remove(getCurrentCombatantId());
-
 				//Always account for this character's missing place as an offset?
+				
 				passCount++;
 			}
 
 			//Proceed to next character...
 			turn++;
-			
-			//Astoundingly, this seems to be working smoothly. But if a bug emerges later, don't beat yourself up.
-			//The system may need to become more complex.
-			for (int i = 0; i < combatantIdTurnOrder.Count; i++) {
-				int combatantId = combatantIdTurnOrder[i];
-				//string combatantName = getCombatantById(combatantId).name;
-				//int health = getCombatantById(combatantId).health;
-				//int damage = getCombatantById(combatantId).damage;
-				//Debug.Log("combatant: " + combatantName + " " + (health - damage) + "/" + health);
-				if (getCombatantById(combatantId).isAlive() == false) {
-					bool removed = combatantIdTurnOrder.Remove(combatantId);
-					passCount++;
-					//Debug.Log("tried to remove: " + combatantName + " " + removed);
-					i--;
+
+			Debug.Log(
+				"next turn: " + turn + 
+				" pass count: " + passCount + 
+				" (turn - passCount):" + (turn - passCount) + 
+				" % " + combatantIdTurnOrder.Count + 
+				" = " + ((turn - passCount) % combatantIdTurnOrder.Count)
+			);
+
+			if (combatantIdTurnOrder.Count > 0) {
+				//If any previous combatants were removed, account for them in turn order offset.
+				//The currentTurnIndex is actually the *next* turn in terms of which combatant we're dealing with.
+				int currentTurnIndex = getCurrentTurnIndex();
+				int i = 0;
+				while (i < combatantIdTurnOrder.Count) {
+					int combatantId = combatantIdTurnOrder[i];
+					if (getCombatantById(combatantId).isAlive() == false) {
+						bool removed = combatantIdTurnOrder.Remove(combatantId);
+						//This part was sketchy.
+						if (i <= currentTurnIndex) {
+							passCount++;
+							//Debug.Log("tried to remove: " + getCombatantById(combatantId).name + " " + removed + " updated passcount");
+						} else {
+							//Debug.Log("tried to remove: " + getCombatantById(combatantId).name + " " + removed);
+						}
+					} else {
+						i++;
+					}
 				}
 			}
-
+			
+			//This is a distinct block from the above. The above block can change the combatantIdTurnOrder count.
+			//So the count must be checked again.
 			if (combatantIdTurnOrder.Count == 0) {
 				round++;
 				turn = 0;
 				passCount = 0;
-				//Debug.Log("----------------new round");
+				Debug.Log("----------------new round");
 				//New round means draw new cards...
 				//For now all players draw immediately??? Will probably change this.
 				foreach (KeyValuePair<int, Deck> entry in combatantIdDecks) {
 					int combatantId = entry.Key;
 					if (getCombatantById(combatantId).isAlive()) {
-						if (entry.Value.getDrawsRemaining() < 4) {
+						if (entry.Value.getDrawsRemaining() < entry.Value.handSize) {
 							entry.Value.reshuffle();
 						}
 						entry.Value.drawHand();
@@ -183,8 +259,13 @@ public class BattleState {
 				}
 			}
 		}
-		//Input module - instance.processNextAction()
-		inputSource.processNextAction(this);
+		if (round < 20) {
+			//Input module - instance.processNextAction()
+			inputSource.processNextAction(this);
+		} else {
+			Debug.Log("need to stop");
+			return;
+		}
 	}
 
 	/// <summary>
@@ -237,7 +318,7 @@ public class BattleState {
 	}
 
 	private void applyCombatEffects(List<CombatEffect> combatEffects) {
-		Debug.Log("apply combat effects");
+		//Debug.Log("apply combat effects");
 		foreach (CombatEffect effect in combatEffects) {
 			//For now that's it. We're just doing damage.
 			effect.combatant.damage += effect.damage;
@@ -245,9 +326,9 @@ public class BattleState {
 			if (effect.combatant.isAlive() == false) {
 				effect.combatant.blocksMovement = false;
 			}
-			Debug.Log("apply effect to: " + effect.combatant.name + " " + (effect.combatant.health - effect.combatant.damage) + "/" + effect.combatant.health);
+			//Debug.Log("apply effect to: " + effect.combatant.name + " " + (effect.combatant.health - effect.combatant.damage) + "/" + effect.combatant.health);
 		}
-		Debug.Log("Turn order: " + System.String.Join(",", combatantIdTurnOrder));
+		//Debug.Log("Turn order: " + System.String.Join(",", combatantIdTurnOrder));
 	}
 
 	//Input state will be used to figure out just exactly how to modify the state based on input commands.
@@ -255,7 +336,10 @@ public class BattleState {
 	//Everything else needed should be here to do that (eg: current combatant, deck, etc.)
 	//Then there will just be a process function to change state according to the input and the current state.
 	public CombatAction getActionState() {
-		if (actionPhase == pendingActions.Count) {
+		//Check if the battle is concluded first.
+		if (isCombatOver()) {
+			return CombatAction.NONE;
+		} else if (actionPhase == pendingActions.Count) {
 			//All pending actions resolved.
 			//Process next turn, this increments turn, round, and requires card selection.
 			return CombatAction.SELECT_ACTION;
@@ -311,10 +395,5 @@ public class BattleState {
 			}
 		}
 		return blockedHexes;
-	}
-
-	//TODO: add a method for adding an active combatant...
-	public void addActiveCombatant(BattlefieldEntity combatant, List<Card> deck) {
-		//TODO
 	}
 }

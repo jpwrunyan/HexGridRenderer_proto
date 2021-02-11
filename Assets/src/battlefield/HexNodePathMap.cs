@@ -58,6 +58,7 @@ public class HexNodePathMap : NodePathMap {
 	public HexNode getClosestHexNodeTo(Vector2Int hexPos, int travelCostLimit) {
 		HexNode dest = getHexNodeAt(hexPos);
 		//Remember: if the travel cost is infinite due to being  blocked terrain, its prevNode will also be null.
+		//See NodePathMap::getSegmentCost for why float.Maxvalue becomes infinity (resulting in essentially orphaned nodes).
 		while (dest != null && dest.travelCost > travelCostLimit) {
 			dest = (HexNode)dest.prevNode;
 		}
@@ -74,7 +75,10 @@ public class HexNodePathMap : NodePathMap {
 
 	override protected float getSegmentCost(PathableNode start, PathableNode finish) {
 		if (blockedHexes.Contains(((HexNode)finish).hexPos)) {
-			return float.MaxValue;
+			//It's too dangerous to return float.MaxValue.
+			//This will orphan "blocked" nodes which is actually inconvenient if one wishes to choose it for their destination...
+			//return float.MaxValue;
+			return 200;
 		} else {
 			return base.getSegmentCost(start, finish);
 		}

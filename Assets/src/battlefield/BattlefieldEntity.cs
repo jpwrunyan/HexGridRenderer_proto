@@ -7,6 +7,14 @@ using UnityEngine;
 /// </summary>
 public class BattlefieldEntity {
 
+	public string name;
+	public string image;
+
+	public bool isAI = false;
+
+	private int xPos;
+	private int yPos;
+
 	//The position in the arena
 	public Vector2Int pos {
 		get => new Vector2Int(xPos, yPos);
@@ -15,13 +23,7 @@ public class BattlefieldEntity {
 			yPos = value.y;
 		}
 	}
-
-	private int xPos;
-	private int yPos;
-
-	public string name;
-	public string image;
-
+	
 	private int _movementModifier = 0;
 
 	/// <summary>
