@@ -133,8 +133,8 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			return;
 		}
 
-		Debug.Log("processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString());
-		string sourceName = "processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString();
+		//Debug.Log("processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString());
+		
 		if (animationManager.isPlaying && battleState.pendingActions.Count > battleState.actionPhase) {
 			indicator.SetActive(false);
 			//Disable and delay next action until animation(s) are complete.
@@ -143,7 +143,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			return;
 		} else {
 			indicator.SetActive(true);
-			animationManager.onComplete = () => updateIndicatorPosition(sourceName);
+			animationManager.onComplete = () => updateIndicatorPosition();
 		}
 
 		//Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
@@ -169,9 +169,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		infoText.text += "]";
 		infoText.text += " - passcount: " + battleState.passCount;
 
-		Debug.Log("update indicator " + battleState.getCurrentCombatant().pos);
-		updateIndicatorPosition("processNextAction");
-		Debug.Log("accept input");
+		updateIndicatorPosition();
 		//Accept input
 		if (!battleState.getCurrentCombatant().isAI) {
 			switch (battleState.getActionState()) {
@@ -217,10 +215,10 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		} else {
 			uiInputState = DISABLED;
 			if (battleState.getActionState().Equals(CombatAction.SELECT_ACTION)) {
-				Debug.Log("auto select card");
+				//Debug.Log("auto select card");
 				simpleAutoInput.processNextAction(battleState);
 			} else if (battleState.getActionState().Equals(CombatAction.MOVE)) {
-				Debug.Log("auto select move");
+				//Debug.Log("auto select move");
 				//simpleAutoInput.processNextAction(battleState);
 				selectedHexXY = simpleAutoInput.getMoveInput(battleState);
 				updateHexPathRenderer();
@@ -229,7 +227,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 				battleState.getActionState().Equals(CombatAction.MELEE_ATTACK) || 
 				battleState.getActionState().Equals(CombatAction.RANGE_ATTACK)
 			) {
-				Debug.Log("auto select target");
+				//Debug.Log("auto select target");
 				selectedHexXY = simpleAutoInput.getSelectTargetInput(battleState);
 				Debug.Log("select target at: " + selectedHexXY.x + ", " + selectedHexXY.y);
 				commitTargetSelection();
@@ -239,10 +237,10 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 	private int indicatorQuitCount = 0;
 
-	private void updateIndicatorPosition(string source) {
+	private void updateIndicatorPosition() {
 		//Update inidicator
 		if (battleState.getCombatantsInTurnOrder().Count == 0) {
-			Debug.Log("All combatants have been disabled. Disabling turn indicator. " + indicatorQuitCount++ + " source: " + source);
+			Debug.Log("All combatants have been disabled. Disabling turn indicator. " + indicatorQuitCount++);
 			indicator.SetActive(false);
 			return;
 		}
@@ -268,7 +266,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	}
 
 	private void commitMoveSelection() {
-		Debug.Log("commitMoveSelection " + battleState.getCurrentCombatant().name + " move to: " + selectedHexXY);
+		//Debug.Log("commitMoveSelection " + battleState.getCurrentCombatant().name + " move to: " + selectedHexXY);
 		hexGridRenderer.clearHilight();
 		hexGridRenderer.reDrawColor();
 		
@@ -393,18 +391,18 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	}
 
 	private void Navigate_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj) {
-		Debug.Log("action:" + obj.ToString());
+		//Debug.Log("action:" + obj.ToString());
 		//UnityEngine.InputSystem.InputAction action = obj.action;
 		//Debug.Log("action type: " + action.type);
 		//Debug.Log("Type: " + obj.GetType());
 		Vector2 value = obj.ReadValue<Vector2>();
 		InputAction action = obj.action;
 		string actionName = action.name;
-		Debug.Log("action: " + actionName);
+		//Debug.Log("action: " + actionName);
 		InputControl control = obj.control;
 		string controlName = control.name;
 		string controlShortName = control.shortDisplayName;
-		Debug.Log("control: " + controlName + " " + controlShortName);
+		//Debug.Log("control: " + controlName + " " + controlShortName);
 		//Vector2 value2 = action.ReadValue<Vector2>();
 		//Debug.Log("value: " + value);
 		if (controlName == "dpad" || controlName == "rightArrow" || controlName == "leftArrow") {
@@ -427,7 +425,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	}
 
 	private void Submit_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj) {
-		Debug.Log("Submit " + obj.control.name); //A button.
+		//Debug.Log("Submit " + obj.control.name); //A button.
 		if (uiInputState == SELECT_CARD) {
 			if (cardListDisplay.selectedIndex != -1) {
 				commitCardSelection();
@@ -445,7 +443,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	private void Click_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj) {
 		bool isDown = obj.ReadValueAsButton();
 		if (battleState.getCombatantsInTurnOrder().Count > 0) {
-			Debug.Log("Click performed " + getInputName() + " " + battleState.getCurrentCombatant().name);
+			//Debug.Log("Click performed " + getInputName() + " " + battleState.getCurrentCombatant().name);
 		} else {
 			Debug.Log("Click performed but combatants are all gone now. (Maybe this is a residual button release? Click is down: " + isDown);
 			return;
@@ -471,7 +469,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 				if (isOverPassButton(pos)) {
 					if (passSelected) {
 						//do something
-						Debug.Log("pass");
+						//Debug.Log("pass");
 						battleState.processActionInput(cardListDisplay.selectedIndex);
 					}
 					passButton.OnPointerUp(new PointerEventData(null)); //new BaseEventData(EventSystem.current)
@@ -482,7 +480,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			}
 		} else if (uiInputState == SELECT_MOVE) {
 			if (isInsideUI(pos)) {
-				Debug.Log("inside UI");
+				//Debug.Log("inside UI");
 				return;
 			}
 			if (isDown) {
@@ -501,7 +499,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			}
 		} else if (uiInputState == SELECT_TARGET) {
 			if (isInsideUI(pos)) {
-				Debug.Log("inside UI");
+				//Debug.Log("inside UI");
 				return;
 			}
 			if (isDown) {
@@ -525,7 +523,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 				}
 			}
 		} else {
-			Debug.Log("Don't do anything.");
+			//Debug.Log("Don't do anything.");
 		}
 	}
 

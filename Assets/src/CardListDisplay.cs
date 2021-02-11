@@ -86,7 +86,6 @@ public class CardListDisplay : MonoBehaviour {
 		if (inside) {
 			for (int i = 0; i < cardRenderers.Count; i++) {
 				if (RectTransformUtility.RectangleContainsScreenPoint(cardRenderers[i].GetComponent<RectTransform>(), pos)) {
-					Debug.Log("select: " + i);
 					return i;
 				}
 			}
