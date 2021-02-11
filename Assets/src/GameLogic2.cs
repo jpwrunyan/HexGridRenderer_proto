@@ -126,10 +126,10 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	/// </summary>
 	public void processNextAction(BattleState battleState) {
 		//Debug.Log("processNextAction: " + battleState.getCurrentAction().type.ToString());
-		if (battleState.getCombatantsInTurnOrder().Count == 0) {
+		if (battleState.isCombatOver()) {
 			//Somehow, all combatants are no longer active (killed each other?)
 			//This battle cannot continue.
-			Debug.Log("All combatants are dead. Cannot process actions.");
+			infoText.text = "Round " + battleState.round + " Turn " + battleState.turn + " - Battle Over";
 			return;
 		}
 
@@ -154,11 +154,18 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		infoText.text = "Round " + battleState.round + " Turn " + battleState.turn + " - " + battleState.getCurrentCombatant().name + " " + getInputStateName() + "\n";
 		infoText.text += "[";
+		for (int i = 0; i < battleState.getCombatantsInTurnOrder().Count; i++) {
+			BattlefieldEntity combatant = battleState.getCombatantsInTurnOrder()[i];
+			bool isCurrentCombatant = combatant == battleState.getCurrentCombatant();
+			infoText.text += (isCurrentCombatant ? ">" : " ") + combatant.name + (isCurrentCombatant ? "<" : " ");
+		}
+		/*
 		for (int i = 0; i < battleState.combatantIdTurnOrder.Count; i++) {
 			int combatantId = battleState.combatantIdTurnOrder[i];
 			bool currentCombatant = combatantId == battleState.getCurrentCombatantId();
 			infoText.text += (currentCombatant ? ">" : " ") + battleState.getCombatantsInTurnOrder()[i].name + (currentCombatant ? "<" : " ");
 		}
+		*/
 		infoText.text += "]";
 		infoText.text += " - passcount: " + battleState.passCount;
 
@@ -531,14 +538,18 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	//----------------------------------------
 
 	private void updateHexPathRenderer() {
-		HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState.getBlockedHexes());
-		pathMap.setOrigin(battleState.getCurrentCombatant().pos);
-		//Can only move within max range of the action.
-		HexNode dest = pathMap.getClosestHexNodeTo(selectedHexXY, battleState.getCurrentAction().maxRange);
 		List<Vector2Int> path = new List<Vector2Int>();
-		while (dest != null) {
-			path.Add(dest.hexPos);
-			dest = (HexNode)dest.prevNode;
+		try {
+			HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState.getBlockedHexes());
+			pathMap.setOrigin(battleState.getCurrentCombatant().pos);
+			//Can only move within max range of the action.
+			HexNode dest = pathMap.getClosestHexNodeTo(selectedHexXY, battleState.getCurrentAction().maxRange);
+			while (dest != null) {
+				path.Add(dest.hexPos);
+				dest = (HexNode)dest.prevNode;
+			}
+		} catch (ArgumentOutOfRangeException e) {
+			Debug.Log("ArgumentOutOfRange " + e.ActualValue + " - " + e.Message);
 		}
 		hexPathRenderer.pathPos = path;
 		hexPathRenderer.updateOnDemand();

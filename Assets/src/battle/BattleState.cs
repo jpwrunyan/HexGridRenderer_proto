@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -17,11 +18,12 @@ public class BattleState {
 	public List<BattlefieldEntity> battlefieldEntities;
 
 	//A dictionary tracking a list of cards associated with each combatant id.
-	//TODO: replace the List<Card> with a Deck which manages draw, discard, and in-hand data.
 	//Doubles as a means to keep track of active combatants.
 	public Dictionary<int, Deck> combatantIdDecks;
 
-	
+	//A dictionary tracking combatant id and which other combatant id's they are allied with.
+	public Dictionary<int, List<int>> allies;
+
 	//The current round of combat.
 	//Combat begins at round 0. 
 	public int round = 0;
@@ -42,15 +44,31 @@ public class BattleState {
 	//A list of combatant ids and the order in which they take their turn for the current round.
 	//The id corresponds to the index of the battlefieldEntities list.
 	//The turn value determines which combatant in the list is currently taking their turn.
-	public List<int> combatantIdTurnOrder;
+	private List<int> combatantIdTurnOrder;
 
 	private InputSource inputSource;
+
+	public BattleState() {
+		combatantIdTurnOrder = new List<int>();
+		combatantIdDecks = new Dictionary<int, Deck>();
+		allies = new Dictionary<int, List<int>>();
+	}
 
 	public void setInputSource(InputSource inputSource, bool start=true) {
 		this.inputSource = inputSource;
 		if (start) {
 			inputSource.processNextAction(this);
 		}
+	}
+
+	public int addActiveCombatant(BattlefieldEntity combatant, Deck deck) {
+		int combatantId = battlefieldEntities.Count;
+		battlefieldEntities.Add(combatant);
+		allies.Add(combatantId, new List<int>());
+		combatantIdTurnOrder.Add(combatantId);
+		combatantIdDecks.Add(combatantId, deck);
+		deck.drawHand();
+		return combatantId;
 	}
 
 	/// <summary>
@@ -261,12 +279,49 @@ public class BattleState {
 		Debug.Log("Turn order: " + System.String.Join(",", combatantIdTurnOrder));
 	}
 
+	public bool isCombatOver() {
+		//If after all the checks no one is alive, this will return true.
+		bool isAnyoneAlive = false;
+
+		//Basically a simple check of each combatant against the other to see if they are friends.
+		int[] activeCombatantIds = combatantIdDecks.Keys.ToArray();
+
+		Debug.Log("activeCombatantIds(" + activeCombatantIds.Length + "): " + System.String.Join(",", activeCombatantIds));
+		int i = -1;
+		int j = -1;
+		int combatantId = -1;
+		try {
+			for (i = 0; i < activeCombatantIds.Length - 1; i++) {
+				combatantId = activeCombatantIds[i];
+				if (getCombatantById(combatantId).isAlive()) {
+					isAnyoneAlive = true;
+					List<int> allies = this.allies[combatantId];
+					for (j = i + 1; j < activeCombatantIds.Length; j++) {
+						if (!allies.Contains(activeCombatantIds[j])) {
+							Debug.Log("X Combatant " + combatantId + " is NOT friends with " + activeCombatantIds[j]);
+							return false;
+						} else {
+							Debug.Log("Combatant " + combatantId + " is friends with " + activeCombatantIds[j]);
+						}
+					}
+				}
+			}
+		} catch (System.ArgumentOutOfRangeException e) {
+			Debug.Log("ArgumentOutOfRangeException " + e.ActualValue + " - " + e.Message);
+			Debug.Log("i: " + i + " j: " + j + " combatant id: " + combatantId);
+		}
+		return !isAnyoneAlive;
+	}
+
 	//Input state will be used to figure out just exactly how to modify the state based on input commands.
 	//In other words, a given input command will result in a change of state based on the input state.
 	//Everything else needed should be here to do that (eg: current combatant, deck, etc.)
 	//Then there will just be a process function to change state according to the input and the current state.
 	public CombatAction getActionState() {
-		if (actionPhase == pendingActions.Count) {
+		//Check if the battle is concluded first.
+		if (isCombatOver()) {
+			return CombatAction.NONE;
+		} else if (actionPhase == pendingActions.Count) {
 			//All pending actions resolved.
 			//Process next turn, this increments turn, round, and requires card selection.
 			return CombatAction.SELECT_ACTION;
@@ -322,10 +377,5 @@ public class BattleState {
 			}
 		}
 		return blockedHexes;
-	}
-
-	//TODO: add a method for adding an active combatant...
-	public void addActiveCombatant(BattlefieldEntity combatant, List<Card> deck) {
-		//TODO
 	}
 }

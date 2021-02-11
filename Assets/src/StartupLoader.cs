@@ -62,12 +62,14 @@ public class StartupLoader : MonoBehaviour {
 			battleState.hexGrid = new HexGrid(arenaData);
 
 			//Create BattlefieldEntity entities
+
+			//Create terrain entities.
+			//This is ad-hoc at the moment.
 			List<BattlefieldEntity> battlefieldEntities = createTerrainEntities(arenaData);
 			battlefieldEntities.AddRange(createExtraEntities());
 			battleState.battlefieldEntities = battlefieldEntities;
 
-			battleState.combatantIdTurnOrder = new List<int>();
-			battleState.combatantIdDecks = new Dictionary<int, Deck>();
+			
 
 			//Character 1
 			BattlefieldEntity character = new BattlefieldEntity();
@@ -79,8 +81,6 @@ public class StartupLoader : MonoBehaviour {
 			character.health = 4;
 			character.image = "gunslinger_male";
 
-			battlefieldEntities.Add(character);
-			Deck deck;
 			List<Card> cards = new List<Card>();
 
 			Card card;
@@ -103,24 +103,15 @@ public class StartupLoader : MonoBehaviour {
 			cards.Add(card);
 
 			card = new Card();
-			card.title = "Character 1\nAttack 4";
+			card.title = "Character 1\nAttack 4\nShoot someone first.\nSee the bug.";
 			card.attack = 4;
 			card.minRange = 1;
 			card.maxRange = 5;
 			card.radius = 0;
-
 			cards.Add(card);
-
-			battleState.combatantIdTurnOrder.Add(
-				battlefieldEntities.IndexOf(character)
-			);
-			deck = new Deck(cards);
-			battleState.combatantIdDecks.Add(
-				battlefieldEntities.IndexOf(character),
-				deck
-			);
-			deck.drawHand();
 			
+			battleState.addActiveCombatant(character, new Deck(cards));
+
 			//Character 2
 			character = new BattlefieldEntity();
 			character.name = "Medic Female";
@@ -131,8 +122,6 @@ public class StartupLoader : MonoBehaviour {
 			character.health = 4;
 			character.image = "medic_female";
 			character.isAI = true;
-
-			battlefieldEntities.Add(character);
 
 			cards = new List<Card>();
 
@@ -151,17 +140,7 @@ public class StartupLoader : MonoBehaviour {
 			card.move = 3;
 			cards.Add(card);
 
-			battleState.combatantIdTurnOrder.Add(
-				battlefieldEntities.IndexOf(character)
-			);
-
-			deck = new Deck(cards);
-			battleState.combatantIdDecks.Add(
-				battlefieldEntities.IndexOf(character), 
-				deck
-			);
-			deck.handSize = 2;
-			deck.drawHand();
+			battleState.addActiveCombatant(character, new Deck(cards, 2));
 
 			//Character 3
 			character = new BattlefieldEntity();
@@ -173,8 +152,6 @@ public class StartupLoader : MonoBehaviour {
 			character.health = 4;
 			character.image = "gunslinger_female";
 			character.isAI = true;
-
-			battlefieldEntities.Add(character);
 
 			cards = new List<Card>();
 
@@ -196,16 +173,7 @@ public class StartupLoader : MonoBehaviour {
 			card.move = 3;
 			cards.Add(card);
 
-			battleState.combatantIdTurnOrder.Add(
-				battlefieldEntities.IndexOf(character)
-			);
-
-			deck = new Deck(cards);
-			battleState.combatantIdDecks.Add(
-				battlefieldEntities.IndexOf(character),
-				deck
-			);
-			deck.drawHand();
+			battleState.addActiveCombatant(character, new Deck(cards));
 
 			//Character 4
 			character = new BattlefieldEntity();
@@ -217,8 +185,6 @@ public class StartupLoader : MonoBehaviour {
 			character.health = 4;
 			character.image = "merc_female";
 			character.isAI = false;
-
-			battlefieldEntities.Add(character);
 
 			cards = new List<Card>();
 
@@ -235,17 +201,8 @@ public class StartupLoader : MonoBehaviour {
 			card.radius = 1;
 			cards.Add(card);
 
-			battleState.combatantIdTurnOrder.Add(
-				battlefieldEntities.IndexOf(character)
-			);
+			battleState.addActiveCombatant(character, new Deck(cards));
 
-			deck = new Deck(cards);
-			battleState.combatantIdDecks.Add(
-				battlefieldEntities.IndexOf(character),
-				deck
-			);
-			deck.drawHand();
-			
 			//Finish with characters
 
 

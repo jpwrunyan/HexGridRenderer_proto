@@ -27,16 +27,17 @@ public class Deck {
 		return cards;
 	}
 
-	public int handSize = 4;
+	private int handSize;
 
 	private List<Card> drawPile = new List<Card>();
 	private List<Card> discardPile = new List<Card>();
 	private List<Card> hand = new List<Card>();
 	private List<Card> removedCards = new List<Card>();
 
-	public Deck(List<Card> cards) {
+	public Deck(List<Card> cards, int handSize=4) {
 		drawPile.AddRange(cards);
 		shuffleCards(drawPile);
+		this.handSize = handSize;
 	}
 
 	public List<Card> getHand() {
