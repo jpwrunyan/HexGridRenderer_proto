@@ -163,18 +163,9 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			bool isCurrentCombatant = combatant == battleState.getCurrentCombatant();
 			infoText.text += (isCurrentCombatant ? ">" : " ") + combatant.name + (isCurrentCombatant ? "<" : " ");
 		}
-		/*
-		for (int i = 0; i < battleState.combatantIdTurnOrder.Count; i++) {
-			int combatantId = battleState.combatantIdTurnOrder[i];
-			bool currentCombatant = combatantId == battleState.getCurrentCombatantId();
-			infoText.text += (currentCombatant ? ">" : " ") + battleState.getCombatantsInTurnOrder()[i].name + (currentCombatant ? "<" : " ");
-		}
-		*/
-		infoText.text += "]";
-		//infoText.text += " - passcount: " + battleState.passCount;
-
 		
-
+		infoText.text += "]";
+		
 		updateIndicatorPosition();
 		//Accept input
 		if (!battleState.getCurrentCombatant().isAI) {

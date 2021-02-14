@@ -16,15 +16,7 @@ public class BattleState {
 	//The index of this list is used as the id of the combatant.
 	//This list should remain static.
 	public List<BattlefieldEntity> battlefieldEntities;
-
-	//A dictionary tracking a list of cards associated with each combatant id.
-	//Doubles as a means to keep track of active combatants.
-	//public Dictionary<int, Deck> combatantIdDecks;
-
-	//Later I can convert to Combatants that contains Deck, List<int> (allies), and BattlefieldEntity to consolidate these variables.
-	//A dictionary tracking combatant id and which other combatant id's they are allied with.
-	//public Dictionary<int, List<int>> allies;
-
+	
 	//The current round of combat.
 	//Combat begins at round 0. 
 	public int round = 0;
@@ -48,9 +40,7 @@ public class BattleState {
 	private InputSource inputSource;
 
 	public BattleState() {
-		//combatantIdTurnOrder = new List<int>();
-		//combatantIdDecks = new Dictionary<int, Deck>();
-		//allies = new Dictionary<int, List<int>>();
+		//
 	}
 
 	public void setInputSource(InputSource inputSource, bool start=true) {
@@ -68,10 +58,8 @@ public class BattleState {
 	public int addActiveCombatant(Combatant combatant) {
 		int combatantId = battlefieldEntities.Count;
 		battlefieldEntities.Add(combatant);
-		//allies.Add(combatantId, new List<int>());
 		combatantIdTurnOrder.Add(combatantId);
 		activeCombatantIds.Add(combatantId);
-		//combatantIdDecks.Add(combatantId, combatant.deck);
 		combatant.deck.drawHand();
 		return combatantId;
 	}
@@ -127,11 +115,6 @@ public class BattleState {
 	/// <param name="input"></param>
 	public void processActionInput(Vector3Int input) {
 
-		if (isCombatOver()) {
-			return;
-		}
-
-		//Note that if all combatants die in one action, it is possible to enter this with 0-length turn order.
 		Combatant currentCombatant = battlefieldEntities[combatantIdTurnOrder[0]] as Combatant;
 		Deck currentCombatantDeck = currentCombatant.deck;
 
@@ -351,9 +334,6 @@ public class BattleState {
 	}
 	
 	public int getCurrentCombatantId() {
-		if (combatantIdTurnOrder.Count == 0) {
-			Debug.Log("no combatants!");
-		}
 		return combatantIdTurnOrder[0];
 	}
 

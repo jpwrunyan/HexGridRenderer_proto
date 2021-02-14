@@ -50,30 +50,6 @@ public class TurnOrderDisplay : MonoBehaviour {
 			}
 			combatantRenderer.transform.SetSiblingIndex(i);
 		}
-
-
-		/*
-		CombatantRenderer testRenderer = Instantiate(combatantRendererPrefab) as CombatantRenderer;
-		testRenderer.transform.SetParent(this.transform, false);
-		Sprite entitySprite;
-		byte[] pngBytes = imageLibrary.getImageBytesById(battleState.getCurrentCombatant().image);
-		Texture2D tex = new Texture2D(2, 2);
-		tex.LoadImage(pngBytes);
-		//entitySprite = spriteCache[entity.image] = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.0f), 5.0f);
-		int maxPixelSize = Mathf.Max(tex.width, tex.height);
-		float pixelsPerUnit = maxPixelSize / 36f;
-		entitySprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.0f), pixelsPerUnit);
-		entitySprite.name = battleState.getCurrentCombatant().name;
-		testRenderer.GetComponent<Image>().sprite = entitySprite;
-		testRenderer.GetComponent<Image>().preserveAspect = true;
-		testRenderer.gameObject.name = battleState.getCurrentCombatant().name + " Portrait Renderer";
-		testRenderer.setText(battleState.getCurrentCombatant().name);
-
-
-
-		testRenderer.gameObject.transform.SetSiblingIndex(0);
-		//testRenderer.GetComponent<TextMesh>().text = "SHOW ME SOMETHING!";
-		*/
 	}
 
 	// Start is called before the first frame update
