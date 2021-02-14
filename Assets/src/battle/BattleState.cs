@@ -21,6 +21,7 @@ public class BattleState {
 	//Doubles as a means to keep track of active combatants.
 	public Dictionary<int, Deck> combatantIdDecks;
 
+	//Later I can convert to Combatants that contains Deck, List<int> (allies), and BattlefieldEntity to consolidate these variables.
 	//A dictionary tracking combatant id and which other combatant id's they are allied with.
 	public Dictionary<int, List<int>> allies;
 

@@ -23,6 +23,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	private const int SELECT_MOVE = 2;
 	private const int SELECT_TARGET = 3;
 
+	public TurnOrderDisplay turnOrderDisplay;
 	public CardRenderer selectedCardRenderer;
 	public CardListDisplay cardListDisplay;
 	public HexGridRenderer hexGridRenderer;
@@ -168,6 +169,9 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		*/
 		infoText.text += "]";
 		infoText.text += " - passcount: " + battleState.passCount;
+
+		GameState gameState = GameState.getInstance();
+		turnOrderDisplay.updateDisplay(battleState, gameState.imageLibrary);
 
 		updateIndicatorPosition();
 		//Accept input

@@ -106,7 +106,7 @@ public class CardListDisplay : MonoBehaviour {
 		rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, h);
 
 		int n = cards.Count;
-		for (int i = 0; i < cards.Count; i++) {
+		for (int i = 0; i < n; i++) {
 			CardRenderer cardRenderer;
 			if (i < cardRenderers.Count) {
 				cardRenderer = cardRenderers[i];
