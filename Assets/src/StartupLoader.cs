@@ -69,10 +69,10 @@ public class StartupLoader : MonoBehaviour {
 			battlefieldEntities.AddRange(createExtraEntities());
 			battleState.battlefieldEntities = battlefieldEntities;
 
-			
+
 
 			//Character 1
-			BattlefieldEntity character = new BattlefieldEntity();
+			Combatant character = new Combatant();
 			character.name = "Gunslinger Male";
 			character.pos = new Vector2Int(4, 3);
 			character.movementModifier = 0;
@@ -109,11 +109,12 @@ public class StartupLoader : MonoBehaviour {
 			card.maxRange = 5;
 			card.radius = 0;
 			cards.Add(card);
-			
-			battleState.addActiveCombatant(character, new Deck(cards, "Character 1"));
+
+			character.deck = new Deck(cards, "Character 1");
+			battleState.addActiveCombatant(character);
 
 			//Character 2
-			character = new BattlefieldEntity();
+			character = new Combatant();
 			character.name = "Medic Female";
 			character.pos = new Vector2Int(4, 2);
 			character.movementModifier = 0;
@@ -148,10 +149,11 @@ public class StartupLoader : MonoBehaviour {
 			card.move = 3;
 			cards.Add(card);
 
-			battleState.addActiveCombatant(character, new Deck(cards, "Medic", 4));
+			character.deck = new Deck(cards, "Medic", 4);
+			battleState.addActiveCombatant(character);
 
 			//Character 3
-			character = new BattlefieldEntity();
+			character = new Combatant();
 			character.name = "Gunslinger Female";
 			character.pos = new Vector2Int(2, 3);
 			character.movementModifier = 0;
@@ -186,10 +188,11 @@ public class StartupLoader : MonoBehaviour {
 			card.move = 4;
 			cards.Add(card);
 
-			battleState.addActiveCombatant(character, new Deck(cards, "Gunslinger Female", 4));
+			character.deck = new Deck(cards, "Gunslinger Female", 4);
+			battleState.addActiveCombatant(character);
 
 			//Character 4
-			character = new BattlefieldEntity();
+			character = new Combatant();
 			character.name = "Merc Female";
 			character.pos = new Vector2Int(2, 4);
 			character.movementModifier = 0;
@@ -230,8 +233,8 @@ public class StartupLoader : MonoBehaviour {
 			card.move = 3;
 			cards.Add(card);
 			*/
-
-			battleState.addActiveCombatant(character, new Deck(cards, "Merc Female"));
+			character.deck = new Deck(cards, "Merc Female");
+			battleState.addActiveCombatant(character);
 
 			//Finish with characters
 

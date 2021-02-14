@@ -10,8 +10,6 @@ public class BattlefieldEntity {
 	public string name;
 	public string image;
 
-	public bool isAI = false;
-
 	private int xPos;
 	private int yPos;
 

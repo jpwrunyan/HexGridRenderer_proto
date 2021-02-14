@@ -127,6 +127,9 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	/// </summary>
 	public void processNextAction(BattleState battleState) {
 		//Debug.Log("processNextAction: " + battleState.getCurrentAction().type.ToString());
+		GameState gameState = GameState.getInstance();
+		turnOrderDisplay.updateDisplay(battleState, gameState.imageLibrary);
+
 		if (battleState.isCombatOver()) {
 			//Somehow, all combatants are no longer active (killed each other?)
 			//This battle cannot continue.
@@ -150,8 +153,8 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		//Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
 
 		//Update display information
-		deckText.text = "Deck: " + battleState.getCurrentCombatantDeck().getDrawsRemaining();
-		discardText.text = "Discard: " + battleState.getCurrentCombatantDeck().getDiscardCount();
+		deckText.text = "Deck: " + battleState.getCurrentCombatant().deck.getDrawsRemaining();
+		discardText.text = "Discard: " + battleState.getCurrentCombatant().deck.getDiscardCount();
 
 		infoText.text = "Round " + battleState.round + " Turn " + battleState.turn + " - " + battleState.getCurrentCombatant().name + " " + getInputStateName() + "\n";
 		infoText.text += "[";
@@ -168,10 +171,9 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		}
 		*/
 		infoText.text += "]";
-		infoText.text += " - passcount: " + battleState.passCount;
+		//infoText.text += " - passcount: " + battleState.passCount;
 
-		GameState gameState = GameState.getInstance();
-		turnOrderDisplay.updateDisplay(battleState, gameState.imageLibrary);
+		
 
 		updateIndicatorPosition();
 		//Accept input
@@ -183,7 +185,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 					cardListDisplay.gameObject.SetActive(true);
 					cardListDisplay.clearSelection();
 				
-					List<Card> cards = battleState.getCurrentCombatantDeck().getHand();
+					List<Card> cards = battleState.getCurrentCombatant().deck.getHand();
 					cardListDisplay.setCards(cards);
 					uiInputState = SELECT_CARD;
 					break;
@@ -255,11 +257,12 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	}
 
 	public void Update() {
+		//Might be worthwhile to move this to the indicator script so that when it's not active it doesn't get called.
 		indicator.transform.Rotate(Vector3.up * (50 * Time.deltaTime));
 	}
 
 	private void commitCardSelection() {
-		Card selectedCard = battleState.getCurrentCombatantDeck().getHand()[cardListDisplay.selectedIndex];
+		Card selectedCard = battleState.getCurrentCombatant().deck.getHand()[cardListDisplay.selectedIndex];
 
 		//Might move these commands to an updateDisplay method
 		cardListDisplay.hideCard(cardListDisplay.selectedIndex);

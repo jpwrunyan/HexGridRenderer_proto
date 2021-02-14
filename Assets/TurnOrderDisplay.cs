@@ -9,22 +9,28 @@ public class TurnOrderDisplay : MonoBehaviour {
 
 	public CombatantRenderer combatantRendererPrefab;
 
-	private List<CombatantRenderer> combatantRenderers = new List<CombatantRenderer>();
+	//private List<CombatantRenderer> combatantRenderers = new List<CombatantRenderer>();
+
+	private Dictionary<Combatant, CombatantRenderer> combatantRenderers = new Dictionary<Combatant, CombatantRenderer>();
 
 	public void updateDisplay(BattleState battleState, ImageLibrary imageLibrary) {
+		//Hide any existing renderers.
+		foreach (CombatantRenderer combatantRenderer in combatantRenderers.Values) {
+			combatantRenderer.gameObject.SetActive(false);
+		}
 
-		List<BattlefieldEntity> combatantsInTurnOrder = battleState.getCombatantsInTurnOrder();
+		List<Combatant> combatantsInTurnOrder = battleState.getCombatantsInTurnOrder();
 		int n = combatantsInTurnOrder.Count;
 
 		for (int i = 0; i < n; i++) {
+			Combatant combatant = combatantsInTurnOrder[i];
 			CombatantRenderer combatantRenderer;
-			if (i < combatantRenderers.Count) {
-				combatantRenderer = combatantRenderers[i];
+			if (combatantRenderers.ContainsKey(combatant)) {
+				combatantRenderer = combatantRenderers[combatant];
 				combatantRenderer.gameObject.SetActive(true);
 				//combatantRenderer.visible = true;
 			} else {
 				combatantRenderer = Instantiate(combatantRendererPrefab) as CombatantRenderer;
-
 				Sprite entitySprite;
 				byte[] pngBytes = imageLibrary.getImageBytesById(combatantsInTurnOrder[i].image);
 				Texture2D tex = new Texture2D(2, 2);
@@ -40,15 +46,11 @@ public class TurnOrderDisplay : MonoBehaviour {
 				combatantRenderer.setText(combatantsInTurnOrder[i].name);
 
 				combatantRenderer.transform.SetParent(this.transform, false);
-				combatantRenderers.Add(combatantRenderer);
+				combatantRenderers[combatant] = combatantRenderer;
 			}
-			//cardRenderer.setCard(cards[i]);
+			combatantRenderer.transform.SetSiblingIndex(i);
 		}
 
-		while (n < combatantRenderers.Count) {
-			//Do not destroy excess card renderers, just disable them.
-			combatantRenderers[n++].gameObject.SetActive(false);
-		}
 
 		/*
 		CombatantRenderer testRenderer = Instantiate(combatantRendererPrefab) as CombatantRenderer;
