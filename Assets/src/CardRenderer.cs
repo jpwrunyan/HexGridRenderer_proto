@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class CardRenderer : MonoBehaviour {
 
 	[SerializeField]
-	private Text titleText;
+	private Text titleText = null;
 
 	//Probably don't need these... will come from the prefab this is attached to...
 	const float xDim = 2.5f;
