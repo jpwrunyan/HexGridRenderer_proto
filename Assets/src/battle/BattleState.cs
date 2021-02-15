@@ -50,9 +50,11 @@ public class BattleState {
 		}
 	}
 
-	public int addAlliedActiveCombatants(List<Combatant> combatants, List<Deck> decks) {
-		//TODO
-		return 0;
+	public void addAlliedActiveCombatants(params Combatant[] allies) {
+		foreach (Combatant combatant in allies) {
+			addActiveCombatant(combatant);
+		}
+		setAllies(allies);
 	}
 
 	public void setAllies(params Combatant[] allies) {
@@ -84,7 +86,6 @@ public class BattleState {
 	/// <returns></returns>
 	public bool isCombatOver() {
 		//Basically a simple check of each combatant against the other to see if they are friends.
-		//int[] activeCombatantIds = combatantIdDecks.Keys.ToArray();
 		for (int i = 0; i < activeCombatantIds.Count - 1; i++) {
 			int combatantId = activeCombatantIds[i];
 			Combatant combatant = battlefieldEntities[combatantId] as Combatant;
