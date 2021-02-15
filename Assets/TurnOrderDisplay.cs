@@ -50,6 +50,17 @@ public class TurnOrderDisplay : MonoBehaviour {
 			}
 			combatantRenderer.transform.SetSiblingIndex(i);
 		}
+
+		HorizontalLayoutGroup layout = GetComponent<HorizontalLayoutGroup>();
+
+		float w = combatantRendererPrefab.GetComponent<RectTransform>().rect.width + layout.spacing;
+		w *= n;
+		w += layout.padding.left + layout.padding.right - layout.spacing; //take off the final length of spacing.
+		float h = combatantRendererPrefab.GetComponent<RectTransform>().rect.height + layout.padding.top + layout.padding.bottom;
+
+		RectTransform rectTransform = GetComponent<RectTransform>();
+		rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, w);
+		rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, h);
 	}
 
 	// Start is called before the first frame update

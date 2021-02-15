@@ -122,7 +122,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "medic_female";
-			character.isAI = false;
+			character.isAI = true;
 
 			cards = new List<Card>();
 
@@ -130,7 +130,7 @@ public class StartupLoader : MonoBehaviour {
 			card.title = "Medic Move 1";
 			card.move = 1;
 			cards.Add(card);
-
+			/*
 			card = new Card();
 			card.title = "Medic\nAttack 4\nShoot someone first.\nSee the bug.";
 			card.attack = 4;
@@ -138,7 +138,7 @@ public class StartupLoader : MonoBehaviour {
 			card.maxRange = 5;
 			card.radius = 0;
 			cards.Add(card);
-
+			*/
 			card = new Card();
 			card.title = "Medic Move 2";
 			card.move = 2;
@@ -177,7 +177,7 @@ public class StartupLoader : MonoBehaviour {
 			card.title = "Gunslinger Move 2";
 			card.move = 2;
 			cards.Add(card);
-
+			/*
 			card = new Card();
 			card.title = "Gunslinger Move 3";
 			card.move = 3;
@@ -187,7 +187,7 @@ public class StartupLoader : MonoBehaviour {
 			card.title = "Gunslinger Move 4";
 			card.move = 4;
 			cards.Add(card);
-
+			*/
 			character.deck = new Deck(cards, "Gunslinger Female", 4);
 			battleState.addActiveCombatant(character);
 
@@ -237,7 +237,10 @@ public class StartupLoader : MonoBehaviour {
 			battleState.addActiveCombatant(character);
 
 			//Finish with characters
-
+			battleState.setAllies(
+				battleState.getCombatantsInTurnOrder()[0] as Combatant,
+				battleState.getCombatantsInTurnOrder()[1] as Combatant
+			);
 
 			GameState.getInstance().imageLibrary = imageLibrary;
 			GameState.getInstance().arenaData = arenaData;

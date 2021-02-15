@@ -55,6 +55,19 @@ public class BattleState {
 		return 0;
 	}
 
+	public void setAllies(params Combatant[] allies) {
+		//people.Select(person => person.Age).ToArray()
+		int[] allyIds = allies.Select(combatant => battlefieldEntities.IndexOf(combatant)).ToArray();
+		foreach (Combatant combatant in allies) {
+			int combatantId = battlefieldEntities.IndexOf(combatant);
+			foreach (int allyId in allyIds) {
+				if (combatantId != allyId && !combatant.allyIds.Contains(allyId)) {
+					combatant.allyIds.Add(allyId);
+				}
+			}
+		}
+	}
+
 	public int addActiveCombatant(Combatant combatant) {
 		int combatantId = battlefieldEntities.Count;
 		battlefieldEntities.Add(combatant);
