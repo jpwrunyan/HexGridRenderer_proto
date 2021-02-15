@@ -370,11 +370,6 @@ public class BattleState {
 
 	public List<Combatant> getCombatantsInTurnOrder() {
 		List<Combatant> combatants = new List<Combatant>();
-		/*
-		for (int i = 0; i < combatantIdTurnOrder.Count; i++) {
-			combatants.Add(battlefieldEntities[combatantIdTurnOrder[i]] as Combatant);
-		}
-		*/
 		foreach (int i in combatantIdTurnOrder) {
 			combatants.Add(battlefieldEntities[i] as Combatant);
 		}
