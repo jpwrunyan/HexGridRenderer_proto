@@ -138,7 +138,6 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		}
 
 		//Debug.Log("processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString());
-		
 		if (animationManager.isPlaying && battleState.pendingActions.Count > battleState.actionPhase) {
 			indicator.SetActive(false);
 			//Disable and delay next action until animation(s) are complete.
@@ -149,8 +148,8 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			indicator.SetActive(true);
 			animationManager.onComplete = () => updateIndicatorPosition();
 		}
-
-		//Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
+		
+		Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
 
 		//Update display information
 		deckText.text = "Deck: " + battleState.getCurrentCombatant().deck.getDrawsRemaining();
@@ -158,19 +157,24 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		infoText.text = "Round " + battleState.round + " Turn " + battleState.turn + " - " + battleState.getCurrentCombatant().name + " " + getInputStateName() + "\n";
 		infoText.text += "[";
+		
 		for (int i = 0; i < battleState.getCombatantsInTurnOrder().Count; i++) {
 			BattlefieldEntity combatant = battleState.getCombatantsInTurnOrder()[i];
 			bool isCurrentCombatant = combatant == battleState.getCurrentCombatant();
 			infoText.text += (isCurrentCombatant ? ">" : " ") + combatant.name + (isCurrentCombatant ? "<" : " ");
 		}
 		
-		infoText.text += "]";
-		
+		infoText.text += "]\n";
+
+		if (selectedCardRenderer.visible) {
+			infoText.text += "Played: " + selectedCardRenderer.getTitle().Replace("\n", " ");
+		}
+
 		updateIndicatorPosition();
 		//Accept input
 		if (!battleState.getCurrentCombatant().isAI) {
 			switch (battleState.getActionState()) {
-				case CombatAction.SELECT_ACTION: {
+				case CombatActionType.SELECT_ACTION: {
 					//Show the card selection options
 					selectedCardRenderer.gameObject.SetActive(false);
 					cardListDisplay.gameObject.SetActive(true);
@@ -181,15 +185,15 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 					uiInputState = SELECT_CARD;
 					break;
 				}
-				case CombatAction.MOVE: {
+				case CombatActionType.MOVE: {
 					hexPathRenderer.gameObject.SetActive(true);
 					hexPathRenderer.pathPos = new List<Vector2Int>();
 					hexPathRenderer.updateOnDemand();
 					uiInputState = SELECT_MOVE;
 					break;
 				}
-				case CombatAction.MELEE_ATTACK:
-				case CombatAction.RANGE_ATTACK: {
+				case CombatActionType.MELEE_ATTACK:
+				case CombatActionType.RANGE_ATTACK: {
 					validTargets = HexGrid.getVisibleHexes(
 						battleState.getCurrentCombatant().pos,
 						battleState.getBlockedHexes(1).ToArray(),
@@ -211,21 +215,23 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			}
 		} else {
 			uiInputState = DISABLED;
-			if (battleState.getActionState().Equals(CombatAction.SELECT_ACTION)) {
+			if (battleState.getActionState().Equals(CombatActionType.SELECT_ACTION)) {
 				//Debug.Log("auto select card");
-				simpleAutoInput.processNextAction(battleState);
-			} else if (battleState.getActionState().Equals(CombatAction.MOVE)) {
+				cardListDisplay.selectedIndex = simpleAutoInput.getSelectCardInput(battleState).value.x;
+				commitCardSelection();
+				//simpleAutoInput.processNextAction(battleState);
+			} else if (battleState.getActionState().Equals(CombatActionType.MOVE)) {
 				//Debug.Log("auto select move");
 				//simpleAutoInput.processNextAction(battleState);
-				selectedHexXY = simpleAutoInput.getMoveInput(battleState);
+				selectedHexXY = simpleAutoInput.getMoveInput(battleState).value;
 				updateHexPathRenderer();
 				commitMoveSelection();
 			} else if (
-				battleState.getActionState().Equals(CombatAction.MELEE_ATTACK) || 
-				battleState.getActionState().Equals(CombatAction.RANGE_ATTACK)
+				battleState.getActionState().Equals(CombatActionType.MELEE_ATTACK) || 
+				battleState.getActionState().Equals(CombatActionType.RANGE_ATTACK)
 			) {
 				//Debug.Log("auto select target");
-				selectedHexXY = simpleAutoInput.getSelectTargetInput(battleState);
+				selectedHexXY = simpleAutoInput.getSelectTargetInput(battleState).value;
 				Debug.Log("select target at: " + selectedHexXY.x + ", " + selectedHexXY.y);
 				commitTargetSelection();
 			}
@@ -254,13 +260,15 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 	private void commitCardSelection() {
 		Card selectedCard = battleState.getCurrentCombatant().deck.getHand()[cardListDisplay.selectedIndex];
-
 		//Might move these commands to an updateDisplay method
 		cardListDisplay.hideCard(cardListDisplay.selectedIndex);
 		selectedCardRenderer.setCard(selectedCard);
 		selectedCardRenderer.gameObject.SetActive(true);
 		cardListDisplay.gameObject.SetActive(false);
-		battleState.processActionInput(cardListDisplay.selectedIndex);
+		BattleInput input = new BattleInput();
+		input.combatantId = selectedCard.combatantId;
+		input.value = new Vector2Int(cardListDisplay.selectedIndex, 0);
+		battleState.processActionInput(input);
 	}
 
 	private void commitMoveSelection() {
@@ -291,7 +299,10 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			}
 		}
 		hexPathRenderer.gameObject.SetActive(false);
-		battleState.processActionInput(selectedHexXY);
+		BattleInput input = new BattleInput();
+		input.combatantId = battleState.getCurrentCombatantId();
+		input.value = selectedHexXY;
+		battleState.processActionInput(input);
 	}
 
 	private void commitTargetSelection() {
@@ -316,9 +327,11 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		} else {
 			//We consider this to be skipped input.
 		}
-			
-		
-		battleState.processActionInput(selectedHexXY);
+
+		BattleInput input = new BattleInput();
+		input.combatantId = battleState.getCurrentCombatantId();
+		input.value = selectedHexXY;
+		battleState.processActionInput(input);
 	}
 
 	//----------------------------------------
@@ -468,7 +481,10 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 					if (passSelected) {
 						//do something
 						//Debug.Log("pass");
-						battleState.processActionInput(cardListDisplay.selectedIndex);
+						BattleInput input = new BattleInput();
+						input.combatantId = battleState.getCurrentCombatantId();
+						input.value = new Vector2Int(cardListDisplay.selectedIndex, 0);
+						battleState.processActionInput(input);
 					}
 					passButton.OnPointerUp(new PointerEventData(null)); //new BaseEventData(EventSystem.current)
 				} else {

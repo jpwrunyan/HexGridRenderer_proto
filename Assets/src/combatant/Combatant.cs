@@ -10,5 +10,5 @@ public class Combatant : BattlefieldEntity {
 	public bool isAI = false;
 	public int initiative = 0;
 	//This variable may not be necessary. Can be inferred from BattleState::combatantIdTurnOrder
-	public bool turnDone = false;
+	//public bool turnDone = false;
 }

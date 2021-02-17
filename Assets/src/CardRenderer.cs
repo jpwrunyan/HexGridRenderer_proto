@@ -28,6 +28,10 @@ public class CardRenderer : MonoBehaviour {
 		titleText.text = card.title;
 	}
 
+	public string getTitle() {
+		return titleText.text;
+	}
+
     // Start is called before the first frame update
     void Start() {
         

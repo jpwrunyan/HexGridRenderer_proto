@@ -105,40 +105,22 @@ public class BattleState {
 	}
 
 	/// <summary>
-	/// Called by the input module.
-	/// </summary>
-	/// <param name="index">selected index</param>
-	public void processActionInput(int index) {
-		processActionInput(new Vector3Int(index, 0, 0));
-	}
-
-	/// <summary>
-	/// Called by the input module.
-	/// </summary>
-	/// <param name="p">selected point</param>
-	public void processActionInput(Vector2Int p) {
-		//Assumes we're moving the current turn combatant.
-		//Debug.Log("processActionInput: " + getCurrentCombatant().name + p.x + ", " + p.y + " z set to: " + getCurrentCombatantId());
-		processActionInput(new Vector3Int(p.x, p.y, getCurrentCombatantId()));
-	}
-
-	/// <summary>
 	/// Input is recieved from the input processor (whether it's manual UI or ai logic).
 	/// In the future, I may abstract the input processor and make it a held reference for battle state...
 	/// </summary>
 	/// <param name="input"></param>
-	public void processActionInput(Vector3Int input) {
+	public void processActionInput(BattleInput input) {
 
 		Combatant currentCombatant = battlefieldEntities[combatantIdTurnOrder[0]] as Combatant;
 		Deck currentCombatantDeck = currentCombatant.deck;
 
 		switch (getActionState()) {
-			case CombatAction.SELECT_ACTION: {
+			case CombatActionType.SELECT_ACTION: {
 				//Card index is the input.x value.
 				//change the deck accordingly.
 				//Debug.Log("process select action");
-
-				if (input.x == -1) {
+				int selectedIndex = input.value.x;
+				if (selectedIndex == -1) {
 					//Player folded.
 					pendingActions = new List<Card.CardAction>();
 					//Discard all cards now? This determines pass state further down.
@@ -147,7 +129,7 @@ public class BattleState {
 						currentCombatantDeck.discard(currentCombatantDeck.getHand()[0]);
 					}
 				} else {
-					Card card = currentCombatantDeck.getHand()[input.x];
+					Card card = currentCombatantDeck.getHand()[selectedIndex];
 					pendingActions = card.getCardActions();
 					//May possibly handle discards via CombatEffect
 					currentCombatantDeck.discard(card);
@@ -155,7 +137,7 @@ public class BattleState {
 				actionPhase = 0;
 				break;
 			}
-			case CombatAction.MOVE: {
+			case CombatActionType.MOVE: {
 				//In the future I may require that the actual node data is also provided so validation can occur...
 				//I may also need to know the subject of the action in case it isn't always the current combatant.
 				//This will require updating the input parameter to a more complicated structure.
@@ -168,10 +150,10 @@ public class BattleState {
 				HexNodePathMap pathMap = new HexNodePathMap(hexGrid, getBlockedHexes());
 				pathMap.setOrigin(getCurrentCombatant().pos);
 				//Can only move within max range of the action.
-				HexNode dest = pathMap.getClosestHexNodeTo((Vector2Int)input, getCurrentAction().maxRange);
+				HexNode dest = pathMap.getClosestHexNodeTo(input.value, getCurrentAction().maxRange);
 
 				if (dest != null) {
-					battlefieldEntities[input.z].pos = dest.hexPos;
+					battlefieldEntities[input.combatantId].pos = dest.hexPos;
 				} else {
 					Debug.Log("Invalid input. Do not move.");
 				}
@@ -179,12 +161,12 @@ public class BattleState {
 				actionPhase++;
 				break;
 			}
-			case CombatAction.MELEE_ATTACK:
-			case CombatAction.RANGE_ATTACK: {
+			case CombatActionType.MELEE_ATTACK:
+			case CombatActionType.RANGE_ATTACK: {
 				//Debug.Log("process attack");
-				if (isTargetValid((Vector2Int)input)) {
+				if (isTargetValid(input.value)) {
 					//Valid input.
-					applyCombatEffects(determineCombatEffects((Vector2Int)input));
+					applyCombatEffects(determineCombatEffects(input.value));
 				}
 				actionPhase++;
 				break;
@@ -206,7 +188,6 @@ public class BattleState {
 					" deck: " +
 					currentCombatant.name
 				);
-				currentCombatant.turnDone = true;
 			} else if (currentCombatant.isAlive()) {
 				combatantIdTurnOrder.Add(combatantIdTurnOrder[0]);
 			}
@@ -251,15 +232,12 @@ public class BattleState {
 		for (int i = 0; i < activeCombatantIds.Count; i++) {
 			Combatant combatant = battlefieldEntities[activeCombatantIds[i]] as Combatant;
 			if (combatant.isAlive()) {
-				combatant.turnDone = false;
 				if (combatant.deck.getDrawsRemaining() < combatant.deck.handSize) {
 					combatant.deck.reshuffle();
 				}
 				combatant.deck.drawHand();
 				//TODO determine position in turn order based on intiative.
 				combatantIdTurnOrder.Add(activeCombatantIds[i]);
-			} else {
-				combatant.turnDone = true;
 			}
 		}
 	}
@@ -331,14 +309,14 @@ public class BattleState {
 	//In other words, a given input command will result in a change of state based on the input state.
 	//Everything else needed should be here to do that (eg: current combatant, deck, etc.)
 	//Then there will just be a process function to change state according to the input and the current state.
-	public CombatAction getActionState() {
+	public CombatActionType getActionState() {
 		//Check if the battle is concluded first.
 		if (isCombatOver()) {
-			return CombatAction.NONE;
+			return CombatActionType.NONE;
 		} else if (actionPhase == pendingActions.Count) {
 			//All pending actions resolved.
 			//Process next turn, this increments turn, round, and requires card selection.
-			return CombatAction.SELECT_ACTION;
+			return CombatActionType.SELECT_ACTION;
 			//} else if (actionPhase == pendingActions.Count) {
 			//I think I need this for my own sanity.
 			//	return Action.END_TURN;

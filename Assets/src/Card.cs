@@ -48,7 +48,7 @@ public class Card {
 		List<CardAction> cardActions = new List<CardAction>();
 		if (move > 0) {
 			CardAction cardAction = new CardAction();
-			cardAction.type = CombatAction.MOVE;
+			cardAction.type = CombatActionType.MOVE;
 			//cardAction.value = move;
 			cardAction.maxRange = move;
 			cardAction.minRange = 0;
@@ -56,7 +56,7 @@ public class Card {
 		}
 		if (attack > 0) {
 			CardAction cardAction = new CardAction();
-			cardAction.type = minRange == 1 && maxRange == 1 ? CombatAction.MELEE_ATTACK : CombatAction.RANGE_ATTACK;
+			cardAction.type = minRange == 1 && maxRange == 1 ? CombatActionType.MELEE_ATTACK : CombatActionType.RANGE_ATTACK;
 			cardAction.value = attack;
 			cardAction.minRange = minRange;
 			cardAction.maxRange = maxRange;
@@ -81,7 +81,7 @@ public class Card {
 	//As opposed to battlefield effects like actually moving/repositioning an entity and taking damage...
 	public class CardAction {
 		//Default 0 means this is a non-action, regardless of other values.
-		public CombatAction type = CombatAction.UNKNOWN;
+		public CombatActionType type = CombatActionType.UNKNOWN;
 
 		//Generic value
 		public int value = 0; //used by attack type, will be replaced by more complex damage information
@@ -90,5 +90,6 @@ public class Card {
 		public int minRange = 0; //min range, movement minimum (usually 0)
 		public int maxRange = 0; //max range, movement (max movement range, not necessarily the movement *cost* though?)
 		public int radius = 0; //used by attack type
+		public int initiative = 1; //the cumulative initiative value
 	}
 }

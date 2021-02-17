@@ -9,6 +9,8 @@ public class BattlefieldEntity {
 
 	public string name;
 	public string image;
+	//Potentially, only terrain will use this value. It is not meant to be dynamic.
+	public uint color = 0xFFFFFF;
 
 	private int xPos;
 	private int yPos;

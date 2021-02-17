@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Globalization;
 
 public class StartupLoader : MonoBehaviour {
 	private void Awake() {
@@ -226,14 +227,13 @@ public class StartupLoader : MonoBehaviour {
 			card.title = "Merc Move 3";
 			card.move = 3;
 			cards.Add(card);
-
-			/*
+			
 			card = new Card();
-			card.title = "Temporary Move 3";
+			card.title = "Merc Move 3b";
 			card.move = 3;
 			cards.Add(card);
-			*/
-			character.deck = new Deck(cards, "Merc Female");
+			
+			character.deck = new Deck(cards, "Merc Female", 3);
 			battleState.addActiveCombatant(character);
 
 			//Finish with characters
@@ -265,7 +265,9 @@ public class StartupLoader : MonoBehaviour {
 			terrainEntity.blocksMovement = entity.blocksMovement;
 			terrainEntity.blocksVision = entity.blocksVision;
 			terrainEntity.image = entity.image;
-
+			if (entity.color != null) {
+				terrainEntity.color = uint.Parse(entity.color, NumberStyles.HexNumber);
+			}
 			battlefieldEntities.Add(terrainEntity);
 		}
 		return battlefieldEntities;

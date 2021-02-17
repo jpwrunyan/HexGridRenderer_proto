@@ -10,9 +10,17 @@ public class EntityRenderer : MonoBehaviour {
 		GameObject gameObject = new GameObject(entity.name);
 		//Must instantiate and add the SpriteRenderer to the base GameObject before attaching the EntityRenderer script due to RequireComponent.
 
+		//Need to change from SpriteRenderer to an actual plane object so we can fix layer order issues.
+
 		SpriteRenderer spriteRenderer = gameObject.AddComponent<SpriteRenderer>() as SpriteRenderer;
 		spriteRenderer.sprite = sprite;
-		
+		uint color = entity.color;
+		uint r = (color >> 16) & 255;
+		uint g = (color >> 8) & 255;
+		uint b = color & 255;
+		//Debug.Log("r: " + r + " g: " + g + " b: " + b);
+		spriteRenderer.color = new Color(r / 255f, g / 255f, b / 255f);
+
 		EntityRenderer entityRenderer = gameObject.AddComponent<EntityRenderer>();
 		entityRenderer.spriteRenderer = spriteRenderer;
 
