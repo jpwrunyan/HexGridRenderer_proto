@@ -2,16 +2,9 @@
 
 	public UnityEngine.Vector2Int hexPos;
 
-	private float _travelCost = 1;
-	
-	public float travelCost {
-		get {
-			return _travelCost;
-		}
-		set {
-			_travelCost = value;
-		}
-	}
+	public float travelCost { get; set; } = 1;
+
+	public int costModifier = 0;
 
 	private HexNode _prevNode;
 
@@ -25,6 +18,6 @@
 	}
 
 	override public string ToString() {
-		return "(" + hexPos.x + ", " + hexPos.y + ") cost: " + _travelCost + (_prevNode == null ? " origin" : " prev: " + _prevNode.hexPos);
+		return "(" + hexPos.x + ", " + hexPos.y + ") cost: " + travelCost + (_prevNode == null ? " origin" : " prev: " + _prevNode.hexPos);
 	}
 }

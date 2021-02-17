@@ -78,6 +78,7 @@ public class StartupLoader : MonoBehaviour {
 			character.pos = new Vector2Int(4, 3);
 			character.movementModifier = 0;
 			character.blocksMovement = true;
+			character.movementModifier = 100;
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "gunslinger_male";
@@ -120,6 +121,7 @@ public class StartupLoader : MonoBehaviour {
 			character.pos = new Vector2Int(4, 2);
 			character.movementModifier = 0;
 			character.blocksMovement = true;
+			character.movementModifier = 100;
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "medic_female";
@@ -157,8 +159,8 @@ public class StartupLoader : MonoBehaviour {
 			character = new Combatant();
 			character.name = "Gunslinger Female";
 			character.pos = new Vector2Int(2, 3);
-			character.movementModifier = 0;
 			character.blocksMovement = true;
+			character.movementModifier = 100;
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "gunslinger_female";
@@ -196,8 +198,8 @@ public class StartupLoader : MonoBehaviour {
 			character = new Combatant();
 			character.name = "Merc Female";
 			character.pos = new Vector2Int(2, 4);
-			character.movementModifier = 0;
 			character.blocksMovement = true;
+			character.movementModifier = 100;
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "merc_female";
@@ -261,8 +263,12 @@ public class StartupLoader : MonoBehaviour {
 			BattlefieldEntity terrainEntity = new BattlefieldEntity();
 			terrainEntity.name = entity.name;
 			terrainEntity.pos = new Vector2Int(entity.x, entity.y);
-			terrainEntity.movementModifier = entity.movementModifier;
 			terrainEntity.blocksMovement = entity.blocksMovement;
+			if (terrainEntity.blocksMovement) {
+				terrainEntity.movementModifier = 100;
+			} else {
+				terrainEntity.movementModifier = entity.movementModifier;
+			}
 			terrainEntity.blocksVision = entity.blocksVision;
 			terrainEntity.image = entity.image;
 			if (entity.color != null) {
@@ -275,17 +281,17 @@ public class StartupLoader : MonoBehaviour {
 
 	private List<BattlefieldEntity> createExtraEntities() {
 		List<BattlefieldEntity> battlefieldEntities = new List<BattlefieldEntity>();
-
+		
 		BattlefieldEntity testEntity = new BattlefieldEntity();
 		testEntity.name = "door";
 		testEntity.pos = new Vector2Int(5, 3);
-		testEntity.movementModifier = 0;
-		testEntity.blocksMovement = true;
+		testEntity.movementModifier = 1;
+		testEntity.blocksMovement = false;
 		testEntity.blocksVision = true;
 		testEntity.image = "door";
-
+		
 		battlefieldEntities.Add(testEntity);
-
+		
 		return battlefieldEntities;
 	}
 	private static async Task<string> loadArenaData(string filename) {

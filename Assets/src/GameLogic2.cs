@@ -552,7 +552,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	private void updateHexPathRenderer() {
 		List<Vector2Int> path = new List<Vector2Int>();
 		try {
-			HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState.getBlockedHexes());
+			HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState);
 			pathMap.setOrigin(battleState.getCurrentCombatant().pos);
 			//Can only move within max range of the action.
 			HexNode dest = pathMap.getClosestHexNodeTo(selectedHexXY, battleState.getCurrentAction().maxRange);

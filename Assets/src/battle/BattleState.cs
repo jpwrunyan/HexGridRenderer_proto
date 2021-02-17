@@ -147,7 +147,7 @@ public class BattleState {
 				//Debug.Log("process move action");
 
 				//The "clicked" pos could be anywhere. It's a goal. Find the destination along the path that can actually be moved to.
-				HexNodePathMap pathMap = new HexNodePathMap(hexGrid, getBlockedHexes());
+				HexNodePathMap pathMap = new HexNodePathMap(hexGrid, this);
 				pathMap.setOrigin(getCurrentCombatant().pos);
 				//Can only move within max range of the action.
 				HexNode dest = pathMap.getClosestHexNodeTo(input.value, getCurrentAction().maxRange);
@@ -354,6 +354,7 @@ public class BattleState {
 		return combatants;
 	}
 
+	//Currently this is no longer used for movement. It is only used for vision arcs.
 	public List<Vector2Int> getBlockedHexes(int mode=0) {
 		//TODO: make mode an enum of some kind for various tests.
 		List<Vector2Int> blockedHexes = new List<Vector2Int>();

@@ -2,25 +2,30 @@
 using UnityEngine;
 
 public class HexNodePathMap : NodePathMap {
-	
-	//Using a hash set to enforce unique entries.
-	public HashSet<Vector2Int> blockedHexes;
-
 	private Dictionary<Vector2Int, HexNode> hexNodes;
+	private Dictionary<Vector2Int, int> hexCosts;
 
-	public HexNodePathMap(HexGrid hexGrid, List<Vector2Int> blockedHexes) : base() {
-		this.blockedHexes = new HashSet<Vector2Int>(blockedHexes);
+	public HexNodePathMap(HexGrid hexGrid, BattleState battleState, int movementMode=0) : base() {
+		//TODO: hex costs will vary depending on movementMode
+		hexCosts = new Dictionary<Vector2Int, int>();
+		foreach (BattlefieldEntity entity in battleState.battlefieldEntities) {
+			if (hexCosts.ContainsKey(entity.pos)) {
+				hexCosts[entity.pos] += entity.movementModifier;
+			} else {
+				hexCosts[entity.pos] = entity.movementModifier;
+			}
+		}
 
 		hexNodes = new Dictionary<Vector2Int, HexNode>();
 		foreach (Vector2Int hexPos in hexGrid.hexPos) {
 			HexNode hexNode;
 			if (hexNodes.ContainsKey(hexPos)) {
 				hexNode = hexNodes[hexPos];
-			} else { 
+			} else {
 				hexNodes[hexPos] = hexNode = new HexNode();
 				hexNode.hexPos = hexPos;
 			}
-			
+
 			HashSet<PathableNode> adjHexNodes = new HashSet<PathableNode>();
 			foreach (Vector2Int dir in HexGrid.HEX_ROTATIONS) {
 				Vector2Int adjHexPos = new Vector2Int(hexPos.x + dir.x, hexPos.y + dir.y);
@@ -74,11 +79,9 @@ public class HexNodePathMap : NodePathMap {
 	}
 
 	override protected float getSegmentCost(PathableNode start, PathableNode finish) {
-		if (blockedHexes.Contains(((HexNode)finish).hexPos)) {
-			//It's too dangerous to return float.MaxValue.
-			//This will orphan "blocked" nodes which is actually inconvenient if one wishes to choose it for their destination...
-			//return float.MaxValue;
-			return 200;
+		Vector2Int hexPos = ((HexNode)finish).hexPos;
+		if (hexCosts.ContainsKey(hexPos)) {
+			return base.getSegmentCost(start, finish) + hexCosts[hexPos];
 		} else {
 			return base.getSegmentCost(start, finish);
 		}
