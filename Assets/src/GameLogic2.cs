@@ -85,7 +85,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		
 		hexGridRenderer.battlefieldEntities = battleState.battlefieldEntities;
 
-		hexGridRenderer.imageLibarary = gameState.imageLibrary;
+		hexGridRenderer.imageLibrary = gameState.imageLibrary;
 
 		hexGridRenderer.updateDisplay();
 
@@ -100,7 +100,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		//processNextAction();
 		battleState.setInputSource(this);
 
-
+		/*
 		//test showing text:
 		GameObject textHolder = new GameObject();
 		textHolder.name = "Test Setup Text";
@@ -119,6 +119,76 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		textHolder.GetComponent<MeshRenderer>().receiveShadows = false;
 		textHolder.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 		textHolder.transform.localPosition = pos;
+		*/
+
+		//Test showing image:
+		GameObject imageHolder = new GameObject();
+		imageHolder.name = "Image Holder";
+
+		MeshRenderer meshRenderer = imageHolder.AddComponent<MeshRenderer>();
+		//meshRenderer.name = "Image Mesh Renderer";
+
+		Material standardShaderMaterial = new Material(Shader.Find("Unlit/Transparent Cutout"));
+		/*
+		standardShaderMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+		standardShaderMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+		standardShaderMaterial.SetInt("_ZWrite", 1);
+		standardShaderMaterial.EnableKeyword("_ALPHATEST_ON");
+		standardShaderMaterial.DisableKeyword("_ALPHABLEND_ON");
+		standardShaderMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+		standardShaderMaterial.renderQueue = 2450;
+		*/
+		meshRenderer.sharedMaterial = standardShaderMaterial;
+		meshRenderer.receiveShadows = false;
+		meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+		MeshFilter imageMeshFilter = imageHolder.AddComponent<MeshFilter>();
+		//imageMeshFilter.name = "Image Mesh Filter";
+
+		Mesh mesh = new Mesh();
+		mesh.name = "Image Mesh";
+
+		mesh.vertices = new Vector3[4] {
+			new Vector3(0, 0, 0),
+			new Vector3(HexGridRenderer.CELL_HEIGHT, 0, 0),
+			new Vector3(0, HexGridRenderer.CELL_HEIGHT, 0),
+			new Vector3(HexGridRenderer.CELL_HEIGHT, HexGridRenderer.CELL_HEIGHT, 0)
+		};
+
+		mesh.triangles = new int[6] {
+			0, 2, 1, // lower left triangle
+			2, 3, 1 // upper right triangle
+		};
+
+		mesh.normals = new Vector3[4] {
+			-Vector3.forward,
+			-Vector3.forward,
+			-Vector3.forward,
+			-Vector3.forward
+		};
+
+		mesh.uv = new Vector2[4] {
+			new Vector2(0, 0),
+			new Vector2(1, 0),
+			new Vector2(0, 1),
+			new Vector2(1, 1)
+		};
+
+		imageMeshFilter.mesh = mesh;
+
+		// Create a texture. Texture size does not matter, since
+		// LoadImage will replace with with incoming image size.
+		Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+		// A small 64x64 Unity logo encoded into a PNG.
+		byte[] pngBytes = gameState.imageLibrary.getImageBytesById("crater");
+		// Load data into the texture.
+		tex.LoadImage(pngBytes);
+		// Assign texture to renderer's material.
+		meshRenderer.material.mainTexture = tex;
+
+		imageHolder.transform.SetParent(hexGridRenderer.transform, false);
+		Vector3 pos = new Vector3(0, 0, 0);
+		imageHolder.transform.localPosition = pos;
 	}
 
 	/// <summary>
@@ -138,7 +208,6 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		}
 
 		//Debug.Log("processNextAction: " + battleState.getCurrentCombatant().name + " - " + battleState.getActionState().ToString());
-		
 		if (animationManager.isPlaying && battleState.pendingActions.Count > battleState.actionPhase) {
 			indicator.SetActive(false);
 			//Disable and delay next action until animation(s) are complete.
@@ -149,8 +218,8 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			indicator.SetActive(true);
 			animationManager.onComplete = () => updateIndicatorPosition();
 		}
-
-		//Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
+		
+		Debug.Log("process next action: " + battleState.getActionState() + " prev ui state: " + getInputName());
 
 		//Update display information
 		deckText.text = "Deck: " + battleState.getCurrentCombatant().deck.getDrawsRemaining();
@@ -158,19 +227,24 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 		infoText.text = "Round " + battleState.round + " Turn " + battleState.turn + " - " + battleState.getCurrentCombatant().name + " " + getInputStateName() + "\n";
 		infoText.text += "[";
+		
 		for (int i = 0; i < battleState.getCombatantsInTurnOrder().Count; i++) {
 			BattlefieldEntity combatant = battleState.getCombatantsInTurnOrder()[i];
 			bool isCurrentCombatant = combatant == battleState.getCurrentCombatant();
 			infoText.text += (isCurrentCombatant ? ">" : " ") + combatant.name + (isCurrentCombatant ? "<" : " ");
 		}
 		
-		infoText.text += "]";
-		
+		infoText.text += "]\n";
+
+		if (selectedCardRenderer.visible) {
+			infoText.text += "Played: " + selectedCardRenderer.getTitle().Replace("\n", " ");
+		}
+
 		updateIndicatorPosition();
 		//Accept input
 		if (!battleState.getCurrentCombatant().isAI) {
 			switch (battleState.getActionState()) {
-				case CombatAction.SELECT_ACTION: {
+				case CombatActionType.SELECT_ACTION: {
 					//Show the card selection options
 					selectedCardRenderer.gameObject.SetActive(false);
 					cardListDisplay.gameObject.SetActive(true);
@@ -181,15 +255,15 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 					uiInputState = SELECT_CARD;
 					break;
 				}
-				case CombatAction.MOVE: {
+				case CombatActionType.MOVE: {
 					hexPathRenderer.gameObject.SetActive(true);
 					hexPathRenderer.pathPos = new List<Vector2Int>();
 					hexPathRenderer.updateOnDemand();
 					uiInputState = SELECT_MOVE;
 					break;
 				}
-				case CombatAction.MELEE_ATTACK:
-				case CombatAction.RANGE_ATTACK: {
+				case CombatActionType.MELEE_ATTACK:
+				case CombatActionType.RANGE_ATTACK: {
 					validTargets = HexGrid.getVisibleHexes(
 						battleState.getCurrentCombatant().pos,
 						battleState.getBlockedHexes(1).ToArray(),
@@ -211,21 +285,23 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			}
 		} else {
 			uiInputState = DISABLED;
-			if (battleState.getActionState().Equals(CombatAction.SELECT_ACTION)) {
+			if (battleState.getActionState().Equals(CombatActionType.SELECT_ACTION)) {
 				//Debug.Log("auto select card");
-				simpleAutoInput.processNextAction(battleState);
-			} else if (battleState.getActionState().Equals(CombatAction.MOVE)) {
+				cardListDisplay.selectedIndex = simpleAutoInput.getSelectCardInput(battleState).value.x;
+				commitCardSelection();
+				//simpleAutoInput.processNextAction(battleState);
+			} else if (battleState.getActionState().Equals(CombatActionType.MOVE)) {
 				//Debug.Log("auto select move");
 				//simpleAutoInput.processNextAction(battleState);
-				selectedHexXY = simpleAutoInput.getMoveInput(battleState);
+				selectedHexXY = simpleAutoInput.getMoveInput(battleState).value;
 				updateHexPathRenderer();
 				commitMoveSelection();
 			} else if (
-				battleState.getActionState().Equals(CombatAction.MELEE_ATTACK) || 
-				battleState.getActionState().Equals(CombatAction.RANGE_ATTACK)
+				battleState.getActionState().Equals(CombatActionType.MELEE_ATTACK) || 
+				battleState.getActionState().Equals(CombatActionType.RANGE_ATTACK)
 			) {
 				//Debug.Log("auto select target");
-				selectedHexXY = simpleAutoInput.getSelectTargetInput(battleState);
+				selectedHexXY = simpleAutoInput.getSelectTargetInput(battleState).value;
 				Debug.Log("select target at: " + selectedHexXY.x + ", " + selectedHexXY.y);
 				commitTargetSelection();
 			}
@@ -254,13 +330,15 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 	private void commitCardSelection() {
 		Card selectedCard = battleState.getCurrentCombatant().deck.getHand()[cardListDisplay.selectedIndex];
-
 		//Might move these commands to an updateDisplay method
 		cardListDisplay.hideCard(cardListDisplay.selectedIndex);
 		selectedCardRenderer.setCard(selectedCard);
 		selectedCardRenderer.gameObject.SetActive(true);
 		cardListDisplay.gameObject.SetActive(false);
-		battleState.processActionInput(cardListDisplay.selectedIndex);
+		BattleInput input = new BattleInput();
+		input.combatantId = selectedCard.combatantId;
+		input.value = new Vector2Int(cardListDisplay.selectedIndex, 0);
+		battleState.processActionInput(input);
 	}
 
 	private void commitMoveSelection() {
@@ -291,7 +369,10 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			}
 		}
 		hexPathRenderer.gameObject.SetActive(false);
-		battleState.processActionInput(selectedHexXY);
+		BattleInput input = new BattleInput();
+		input.combatantId = battleState.getCurrentCombatantId();
+		input.value = selectedHexXY;
+		battleState.processActionInput(input);
 	}
 
 	private void commitTargetSelection() {
@@ -316,9 +397,11 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		} else {
 			//We consider this to be skipped input.
 		}
-			
-		
-		battleState.processActionInput(selectedHexXY);
+
+		BattleInput input = new BattleInput();
+		input.combatantId = battleState.getCurrentCombatantId();
+		input.value = selectedHexXY;
+		battleState.processActionInput(input);
 	}
 
 	//----------------------------------------
@@ -468,7 +551,10 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 					if (passSelected) {
 						//do something
 						//Debug.Log("pass");
-						battleState.processActionInput(cardListDisplay.selectedIndex);
+						BattleInput input = new BattleInput();
+						input.combatantId = battleState.getCurrentCombatantId();
+						input.value = new Vector2Int(cardListDisplay.selectedIndex, 0);
+						battleState.processActionInput(input);
 					}
 					passButton.OnPointerUp(new PointerEventData(null)); //new BaseEventData(EventSystem.current)
 				} else {
@@ -536,7 +622,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 	private void updateHexPathRenderer() {
 		List<Vector2Int> path = new List<Vector2Int>();
 		try {
-			HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState.getBlockedHexes());
+			HexNodePathMap pathMap = new HexNodePathMap(battleState.hexGrid, battleState);
 			pathMap.setOrigin(battleState.getCurrentCombatant().pos);
 			//Can only move within max range of the action.
 			HexNode dest = pathMap.getClosestHexNodeTo(selectedHexXY, battleState.getCurrentAction().maxRange);

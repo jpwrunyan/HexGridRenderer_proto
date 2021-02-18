@@ -10,6 +10,10 @@ public class BattlefieldEntity {
 	public string name;
 	public string image;
 
+	//TODO: these values belong on a terrain subclass.
+	public uint color = 0xFFFFFF;
+	public bool erect = true;
+
 	private int xPos;
 	private int yPos;
 

@@ -1,4 +1,4 @@
-﻿public enum CombatAction {
+﻿public enum CombatActionType {
 	NONE,
 	SELECT_ACTION,
 	//END_TURN,

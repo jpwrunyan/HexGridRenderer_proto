@@ -10,31 +10,46 @@ public class SimpleAutoInput : InputSource {
 		battleState.processActionInput(getInput(battleState));
 	}
 
-	private Vector2Int getInput(BattleState battleState) {
+	private BattleInput getInput(BattleState battleState) {
 		switch (battleState.getActionState()) {
-			case CombatAction.SELECT_ACTION: return getSelectCardInput(battleState);
-			case CombatAction.MOVE: return getMoveInput(battleState);
-			case CombatAction.MELEE_ATTACK:
-			case CombatAction.RANGE_ATTACK: return getSelectTargetInput(battleState);
-			default: return new Vector2Int(0, 0);
+			case CombatActionType.SELECT_ACTION: return getSelectCardInput(battleState);
+			case CombatActionType.MOVE: return getMoveInput(battleState);
+			case CombatActionType.MELEE_ATTACK:
+			case CombatActionType.RANGE_ATTACK: return getSelectTargetInput(battleState);
+			default: {
+				BattleInput input = new BattleInput();
+				input.combatantId = battleState.getCurrentCombatantId();
+				return input;
+			}
 		}
 	}
 
-	public Vector2Int getSelectCardInput(BattleState battleState) {
-		return new Vector2Int(0, 0);
+	public BattleInput getSelectCardInput(BattleState battleState) {
+		BattleInput input = new BattleInput();
+		input.combatantId = battleState.getCurrentCombatantId();
+		input.value = new Vector2Int(0, 0);
+		return input;
 	}
 
-	public Vector2Int getMoveInput(BattleState battleState) {
+	public BattleInput getMoveInput(BattleState battleState) {
 		//Temporary, should actually be able to move toward blocked hexes.
 		int i = 0;
 		while (battleState.getBlockedHexes().Contains(battleState.hexGrid.hexPos[i])) {
 			//Find a hex that isn't blocked.
 			i++;
 		}
-		return battleState.hexGrid.hexPos[i];
+
+		BattleInput input = new BattleInput();
+		input.combatantId = battleState.getCurrentCombatantId();
+		input.value = battleState.hexGrid.hexPos[i];
+
+		return input;
 	}
 
-	public Vector2Int getSelectTargetInput(BattleState battleState) {
-		return battleState.getCombatantsInTurnOrder()[0].pos;
+	public BattleInput getSelectTargetInput(BattleState battleState) {
+		BattleInput input = new BattleInput();
+		input.combatantId = battleState.getCurrentCombatantId();
+		input.value = battleState.getCombatantsInTurnOrder()[0].pos;
+		return input;
 	}
 }

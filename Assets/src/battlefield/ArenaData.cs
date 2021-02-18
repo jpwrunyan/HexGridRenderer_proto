@@ -39,5 +39,7 @@ public struct ArenaData {
 		public bool blocksMovement;
 		public bool blocksVision;
 		public string image;
+		public string color;
+		public bool erect;
 	}
 }

@@ -34,7 +34,8 @@
 	], 
 	"images": [
 		{"id": "boulders", "file": "boulders.png"}, 
-		{"id": "crater", "file": "crater.png"}
+		{"id": "crater", "file": "crater.png"},
+		{"id": "mud", "file": "mud.png"}
 		/*, 
 		{"id": "tank", "file": "terrain/tank_system_s.png"}*/
 	], 
@@ -45,7 +46,9 @@
 			"y": 2, 
 			"blocksMovement": true, 
 			"blocksVision": true, 
-			"image": "boulders"
+			"image": "boulders", 
+			"color": "404080", 
+			"erect": true
 		}, 
 		{
 			"name": "pit", 
@@ -53,7 +56,8 @@
 			"y": 4, 
 			"blocksMovement": true, 
 			"blocksVision": false, 
-			"image": "crater"
+			"image": "crater",
+			"erect": false
 		}, 
 		{
 			"name": "block 1", 
@@ -61,21 +65,24 @@
 			"y": 6, 
 			"blocksMovement": true, 
 			"blocksVision": true, 
-			"image": "boulders"
+			"image": "boulders",
+			"erect": true
 		}, 
 		{
 			"name": "slow", 
+			"image": "mud", 
 			"x": 3, 
 			"y": 4, 
 			"movementModifier": 1, 
-			"color": "0x404080"
+			"color": "FF0000"
 		}, 
 		{
-			"name": "slow", 
+			"name": "slow2", 
+			"image": "mud", 
 			"x": 4, 
 			"y": 4, 
 			"movementModifier": 1, 
-			"color": "0x404080"
+			"color": "404080"
 		}
 	]
 }

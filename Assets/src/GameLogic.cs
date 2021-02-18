@@ -38,7 +38,7 @@ public class GameLogic : MonoBehaviour {
 			hexGridRenderer.name = "Hex Grid Renderer";
 			hexGridRenderer.hexGrid = new HexGrid(arenaData);
 			//hexGridRenderer.terrain = arenaData.terrain;
-			hexGridRenderer.imageLibarary = imageLibrary;
+			hexGridRenderer.imageLibrary = imageLibrary;
 			/*
 			HexNodePathMap pathMap = new HexNodePathMap(hexGridRenderer.hexGrid, hexGridRenderer.terrain);
 			pathMap.setOrigin(new Vector2Int(3, 3));
