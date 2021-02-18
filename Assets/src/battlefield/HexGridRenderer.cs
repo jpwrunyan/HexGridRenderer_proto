@@ -35,7 +35,7 @@ public class HexGridRenderer : MonoBehaviour {
 	//public List<ArenaData.Terrain> terrain; //later to be replaced by hex entities.
 	public List<BattlefieldEntity> battlefieldEntities;
 
-	public ImageLibrary imageLibarary;
+	public ImageLibrary imageLibrary;
 	
 	private MeshFilter meshFilter;
 	private MeshCollider meshCollider;
@@ -167,7 +167,11 @@ public class HexGridRenderer : MonoBehaviour {
 		meshFilter.mesh = meshCollider.sharedMesh = createGridMesh(hexGrid.hexPos, true);
 		if (battlefieldEntities != null) {
 			foreach (BattlefieldEntity entity in battlefieldEntities) {
-				createEntityRenderer(entity);
+				if (entity is Combatant || entity.erect) {
+					createEntityRenderer(entity);
+				} else {
+					createFlatTerrainRenderer(entity);
+				}
 			}
 		} else {
 			Debug.Log("battlefieldEntities not set");
@@ -213,6 +217,78 @@ public class HexGridRenderer : MonoBehaviour {
 		}
 	}
 
+	private void createFlatTerrainRenderer(BattlefieldEntity entity) {
+		//Test showing image:
+		GameObject imageHolder = new GameObject();
+		imageHolder.name = entity.name;
+
+		MeshRenderer meshRenderer = imageHolder.AddComponent<MeshRenderer>();
+		
+		Material standardShaderMaterial = new Material(Shader.Find("Unlit/Transparent Cutout"));
+		
+		meshRenderer.sharedMaterial = standardShaderMaterial;
+		meshRenderer.receiveShadows = false;
+		meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+		MeshFilter imageMeshFilter = imageHolder.AddComponent<MeshFilter>();
+		
+		Mesh mesh = new Mesh();
+		mesh.name = "Image Mesh";
+
+		float size = CELL_WIDTH / 2;
+
+		mesh.vertices = new Vector3[4] {
+			new Vector3(-size, -size, 0),
+			new Vector3(size, -size, 0),
+			new Vector3(-size, size, 0),
+			new Vector3(size, size, 0)
+		};
+
+		mesh.triangles = new int[6] {
+			0, 2, 1, // lower left triangle
+			2, 3, 1 // upper right triangle
+		};
+
+		mesh.normals = new Vector3[4] {
+			-Vector3.forward,
+			-Vector3.forward,
+			-Vector3.forward,
+			-Vector3.forward
+		};
+
+		mesh.uv = new Vector2[4] {
+			new Vector2(0, 0),
+			new Vector2(1, 0),
+			new Vector2(0, 1),
+			new Vector2(1, 1)
+		};
+
+		imageMeshFilter.mesh = mesh;
+
+		// Create a texture. Texture size does not matter, since
+		// LoadImage will replace with with incoming image size.
+		Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+		
+		byte[] pngBytes = imageLibrary.getImageBytesById(entity.image);
+		if (pngBytes != null) {
+			// Load data into the texture.
+			tex.LoadImage(pngBytes);
+			// Assign texture to renderer's material.
+			meshRenderer.material.mainTexture = tex;
+		}
+		//Color is currently not applied for this material because it's not supported by the shader
+		uint color = entity.color;
+		uint r = (color >> 16) & 255;
+		uint g = (color >> 8) & 255;
+		uint b = color & 255;
+		meshRenderer.material.color = new Color(r / 255f, g / 255f, b / 255f);
+
+		imageHolder.transform.SetParent(gameObject.transform, false);
+		Vector3 pos = getXYZPos(entity.pos);
+		pos.z -= 0.2f;
+		imageHolder.transform.localPosition = pos;
+	}
+
 	private void createEntityRenderer(BattlefieldEntity entity) {
 		//Debug.Log("create renderer: " + entity.name + " image: " + entity.image);
 		EntityRenderer spriteHolder;
@@ -227,7 +303,7 @@ public class HexGridRenderer : MonoBehaviour {
 			if (spriteCache.ContainsKey(entity.image)) {
 				entitySprite = spriteCache[entity.image];
 			} else {
-				byte[] pngBytes = imageLibarary.getImageBytesById(entity.image);
+				byte[] pngBytes = imageLibrary.getImageBytesById(entity.image);
 				Texture2D tex = new Texture2D(2, 2);
 				tex.LoadImage(pngBytes);
 				//entitySprite = spriteCache[entity.image] = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.0f), 5.0f);
@@ -266,11 +342,10 @@ public class HexGridRenderer : MonoBehaviour {
 		spriteHolder.transform.forward = mainCamera.transform.forward;
 		
 		//Temporary to help judge positioning.
-		GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-		//sphere.transform.position = transform.TransformPoint(pos);
-		sphere.transform.parent = gameObject.transform;
-		sphere.transform.localPosition = pos;
-		sphere.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+		//GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+		//sphere.transform.parent = gameObject.transform;
+		//sphere.transform.localPosition = pos;
+		//sphere.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
 	}
 
 	public EntityRenderer getEntityRendererByName(string name) {

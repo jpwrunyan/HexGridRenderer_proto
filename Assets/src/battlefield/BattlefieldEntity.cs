@@ -9,8 +9,10 @@ public class BattlefieldEntity {
 
 	public string name;
 	public string image;
-	//Potentially, only terrain will use this value. It is not meant to be dynamic.
+
+	//TODO: these values belong on a terrain subclass.
 	public uint color = 0xFFFFFF;
+	public bool erect = true;
 
 	private int xPos;
 	private int yPos;

@@ -47,7 +47,8 @@
 			"blocksMovement": true, 
 			"blocksVision": true, 
 			"image": "boulders", 
-			"color": "404080"
+			"color": "404080", 
+			"erect": true
 		}, 
 		{
 			"name": "pit", 
@@ -55,7 +56,8 @@
 			"y": 4, 
 			"blocksMovement": true, 
 			"blocksVision": false, 
-			"image": "crater"
+			"image": "crater",
+			"erect": false
 		}, 
 		{
 			"name": "block 1", 
@@ -63,7 +65,8 @@
 			"y": 6, 
 			"blocksMovement": true, 
 			"blocksVision": true, 
-			"image": "boulders"
+			"image": "boulders",
+			"erect": true
 		}, 
 		{
 			"name": "slow", 
@@ -71,7 +74,7 @@
 			"x": 3, 
 			"y": 4, 
 			"movementModifier": 1, 
-			"color": "404080"
+			"color": "FF0000"
 		}, 
 		{
 			"name": "slow2", 

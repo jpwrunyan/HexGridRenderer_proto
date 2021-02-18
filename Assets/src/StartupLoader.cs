@@ -274,6 +274,7 @@ public class StartupLoader : MonoBehaviour {
 			if (entity.color != null) {
 				terrainEntity.color = uint.Parse(entity.color, NumberStyles.HexNumber);
 			}
+			terrainEntity.erect = entity.erect;
 			battlefieldEntities.Add(terrainEntity);
 		}
 		return battlefieldEntities;
@@ -289,6 +290,7 @@ public class StartupLoader : MonoBehaviour {
 		testEntity.blocksMovement = false;
 		testEntity.blocksVision = true;
 		testEntity.image = "door";
+		testEntity.erect = true;
 		
 		battlefieldEntities.Add(testEntity);
 		
