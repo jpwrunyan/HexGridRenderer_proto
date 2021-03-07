@@ -84,7 +84,8 @@ public class Card {
 		public CombatActionType type = CombatActionType.UNKNOWN;
 
 		//Generic value
-		public int value = 0; //used by attack type, will be replaced by more complex damage information
+		public int value = 0; //used by move and attack types
+		public CombatActionValueType valueType = CombatActionValueType.UNKNOWN; //used by move and attack types
 
 		//potentially rename these max/minValue to reflect their generic use.
 		public int minRange = 0; //min range, movement minimum (usually 0)

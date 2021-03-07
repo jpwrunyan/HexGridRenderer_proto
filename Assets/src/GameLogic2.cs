@@ -79,8 +79,6 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		GameState gameState = GameState.getInstance();
 		battleState = gameState.battleState;
 
-		//ArenaData arenaData = gameState.arenaData;
-
 		hexGridRenderer.hexGrid = battleState.hexGrid;
 		
 		hexGridRenderer.battlefieldEntities = battleState.battlefieldEntities;
@@ -122,6 +120,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		*/
 
 		//Test showing image:
+		/*
 		GameObject imageHolder = new GameObject();
 		imageHolder.name = "Image Holder";
 
@@ -129,15 +128,15 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		//meshRenderer.name = "Image Mesh Renderer";
 
 		Material standardShaderMaterial = new Material(Shader.Find("Unlit/Transparent Cutout"));
-		/*
-		standardShaderMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-		standardShaderMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-		standardShaderMaterial.SetInt("_ZWrite", 1);
-		standardShaderMaterial.EnableKeyword("_ALPHATEST_ON");
-		standardShaderMaterial.DisableKeyword("_ALPHABLEND_ON");
-		standardShaderMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-		standardShaderMaterial.renderQueue = 2450;
-		*/
+		
+		//standardShaderMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+		//standardShaderMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+		//standardShaderMaterial.SetInt("_ZWrite", 1);
+		//standardShaderMaterial.EnableKeyword("_ALPHATEST_ON");
+		//standardShaderMaterial.DisableKeyword("_ALPHABLEND_ON");
+		//standardShaderMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+		//standardShaderMaterial.renderQueue = 2450;
+		
 		meshRenderer.sharedMaterial = standardShaderMaterial;
 		meshRenderer.receiveShadows = false;
 		meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -189,6 +188,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		imageHolder.transform.SetParent(hexGridRenderer.transform, false);
 		Vector3 pos = new Vector3(0, 0, 0);
 		imageHolder.transform.localPosition = pos;
+		*/
 	}
 
 	/// <summary>

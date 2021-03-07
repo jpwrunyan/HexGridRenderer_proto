@@ -31,8 +31,9 @@ public class BattlefieldEntity {
 	/// <summary>
 	/// This is the movement penalty to move through a hex occupied by this combatant.
 	/// Needs work.
+	/// Temporarily put isAlive() check here for movement modifier.
 	/// </summary>
-	public int movementModifier {
+	virtual public int movementModifier {
 		get {
 			return _movementModifier;
 		}

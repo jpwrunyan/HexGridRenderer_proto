@@ -11,4 +11,13 @@ public class Combatant : BattlefieldEntity {
 	public int initiative = 0;
 	//This variable may not be necessary. Can be inferred from BattleState::combatantIdTurnOrder
 	//public bool turnDone = false;
+
+	override public int movementModifier {
+		get {
+			return isAlive() ? base.movementModifier : 0;
+		}
+		set {
+			base.movementModifier = value;
+		}
+	}
 }
