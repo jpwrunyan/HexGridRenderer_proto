@@ -20,8 +20,9 @@ public class AnimationManager : MonoBehaviour {
 
 	private List<BaseAnimation> animationQueue = new List<BaseAnimation>();
 
-	public void queueAnimation(BaseAnimation animation) {
+	public BaseAnimation queueAnimation(BaseAnimation animation) {
 		animationQueue.Add(animation);
+		return animation;
 	}
 
 	private void Update() {
@@ -36,6 +37,7 @@ public class AnimationManager : MonoBehaviour {
 
 	private void animateTarget(BaseAnimation animation) {
 		if (animation.delay > 0) {
+			Debug.Log("there is a delay: " + animation.delay + " " + animation.GetType().Name);
 			animation.delay -= Time.deltaTime;
 			return;
 		}
@@ -59,7 +61,7 @@ public class AnimationManager : MonoBehaviour {
 		}
 	}
 
-	public class BaseAnimation {
+	public abstract class BaseAnimation {
 		public GameObject target;
 		//public var tween:Function = Tween.easeInOutSine;
 		public Func<float, float, float, float, float> tween = AnimationManager.easeInOutSine;
@@ -86,13 +88,18 @@ public class AnimationManager : MonoBehaviour {
 			t = 0;
 		}
 
-		virtual public void animate(float completion) {
-			//To be overridden
-			//throw new Error("BaseAnimation::animate must be overridden");
+		public float getDuration() {
+			return duration;
 		}
 
+		/// <summary>
+		/// Animation logic. Must be overridden.
+		/// </summary>
+		/// <param name="completion"></param>
+		abstract public void animate(float completion);
+
 		virtual public void cleanUp() {
-			//To be overridden
+			//To be overridden if necessary.
 		}
 	}
 
@@ -116,6 +123,10 @@ public class AnimationManager : MonoBehaviour {
 		override public void animate(float completion) {
 			target.transform.localPosition = new Vector3(originX + dx * completion, originY + dy * completion, originZ + dz * completion);
 		}
+	}
+
+	public static float linear(float t, float b, float c, float d) {
+		return c * t / d + b;
 	}
 
 	public static float easeInOutSine(float t, float b, float c, float d) {

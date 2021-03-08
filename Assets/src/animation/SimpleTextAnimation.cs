@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class SimpleTextAnimation : AnimationManager.BaseAnimation {
 
@@ -9,7 +7,7 @@ public class SimpleTextAnimation : AnimationManager.BaseAnimation {
 		
 		//Animation target:
 		target = new GameObject("Simple Text Animation");
-
+		target.SetActive(false);
 		TextMesh textComp = target.AddComponent<TextMesh>();
 		textComp.text = text;
 
@@ -29,6 +27,7 @@ public class SimpleTextAnimation : AnimationManager.BaseAnimation {
 	}
 
 	override public void animate(float completion) {
+		target.SetActive(true);
 		TextMesh textComp = target.GetComponent<TextMesh>();
 		//Have to modify alpha this way.
 		Color tempColor = textComp.color;

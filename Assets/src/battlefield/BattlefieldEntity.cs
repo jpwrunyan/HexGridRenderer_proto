@@ -44,6 +44,10 @@ public class BattlefieldEntity {
 
 	private bool _blocksMovement;
 
+	/// <summary>
+	/// Does this entity block normal movement? This will be replaced later by "elevation" types that block surface and/or air movement.
+	/// Alternatively, there may be terrain types like "pit", "low wall", "high wall" added to Terrain Entities.
+	/// </summary>
 	public bool blocksMovement {
 		get {
 			return _blocksMovement;
@@ -61,18 +65,6 @@ public class BattlefieldEntity {
 		}
 		set {
 			_blocksVision = value;
-		}
-	}
-
-	//These values live here for now. It assumes all entities can potentially be destroyed.
-	private int _harassPenalty = 0;
-
-	public int harassPenalty {
-		get {
-			return _harassPenalty;
-		}
-		set {
-			_harassPenalty = value;
 		}
 	}
 

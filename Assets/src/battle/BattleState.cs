@@ -153,7 +153,13 @@ public class BattleState {
 				HexNode dest = pathMap.getClosestHexNodeTo(input.value, getCurrentAction().maxRange);
 
 				if (dest != null) {
-					battlefieldEntities[input.combatantId].pos = dest.hexPos;
+					Combatant combatant = battlefieldEntities[input.combatantId] as Combatant;
+					combatant.pos = dest.hexPos;
+					//Increment evasion for each hex traversed.
+					while (dest.prevNode != null) {
+						combatant.evasion++;
+						dest = (HexNode) dest.prevNode;
+					}
 				} else {
 					Debug.Log("Invalid input. Do not move.");
 				}
@@ -238,6 +244,9 @@ public class BattleState {
 				combatant.deck.drawHand();
 				//TODO determine position in turn order based on intiative.
 				combatantIdTurnOrder.Add(activeCombatantIds[i]);
+				//Reset evasion and harassment.
+				combatant.evasion = 0;
+				combatant.harassment = 0;
 			}
 		}
 	}
@@ -278,8 +287,19 @@ public class BattleState {
 					//Debug.Log("Checking: " + entity.pos);
 					if (entity.pos.Equals(affectedHexes[i])) {
 						CombatEffect combatEffect = new CombatEffect();
-						combatEffect.combatant = entity;
-						combatEffect.damage = combatAction.value;
+						combatEffect.target = entity;
+						//Calculate if it hits.
+						if (entity is Combatant) {
+							Combatant targetCombatant = ((Combatant)entity);
+							//evasion + -harassment ensures that even if evasion is negative, applying harassment will further decrease it.
+							//I do not want a situation where -1 - 1 = 0. So we use -1 + -1.
+							if (targetCombatant.evasion + -targetCombatant.harassment > combatAction.accuracy) {
+								combatEffect.damage = 0;
+							} else {
+								combatEffect.damage = combatAction.value;
+							}
+							combatEffect.harassment = combatAction.harassment;
+						}
 						combatEffects.Add(combatEffect);
 					}
 				}
@@ -295,10 +315,14 @@ public class BattleState {
 		//Debug.Log("apply combat effects");
 		foreach (CombatEffect effect in combatEffects) {
 			//For now that's it. We're just doing damage.
-			effect.combatant.damage += effect.damage;
+			effect.target.damage += effect.damage;
+			if (effect.target is Combatant) {
+				Combatant targetCombatant = ((Combatant)effect.target);
+				targetCombatant.harassment += effect.harassment;
+			}
 			//We'll update here for now until there's a more elegant solution.
-			if (effect.combatant.isAlive() == false) {
-				effect.combatant.blocksMovement = false;
+			if (effect.target.isAlive() == false) {
+				effect.target.blocksMovement = false;
 			}
 			//Debug.Log("apply effect to: " + effect.combatant.name + " " + (effect.combatant.health - effect.combatant.damage) + "/" + effect.combatant.health);
 		}

@@ -57,6 +57,9 @@ public class Card {
 		if (attack > 0) {
 			CardAction cardAction = new CardAction();
 			cardAction.type = minRange == 1 && maxRange == 1 ? CombatActionType.MELEE_ATTACK : CombatActionType.RANGE_ATTACK;
+			if (cardAction.type == CombatActionType.MELEE_ATTACK) {
+				cardAction.harassment = 1;
+			}
 			cardAction.value = attack;
 			cardAction.minRange = minRange;
 			cardAction.maxRange = maxRange;
@@ -86,6 +89,12 @@ public class Card {
 		//Generic value
 		public int value = 0; //used by move and attack types
 		public CombatActionValueType valueType = CombatActionValueType.UNKNOWN; //used by move and attack types
+
+		//Used to counteract evasion when calculating hits.
+		public int accuracy = 0;
+
+		//Used to modify evasion. Applied after determining hits.
+		public int harassment = 0;
 
 		//potentially rename these max/minValue to reflect their generic use.
 		public int minRange = 0; //min range, movement minimum (usually 0)

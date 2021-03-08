@@ -9,9 +9,15 @@ public class Combatant : BattlefieldEntity {
 	public List<int> allyIds = new List<int>();
 	public bool isAI = false;
 	public int initiative = 0;
-	//This variable may not be necessary. Can be inferred from BattleState::combatantIdTurnOrder
-	//public bool turnDone = false;
-
+	
+	//This score determines how hard it is to target a combatant.
+	//In rare cases it might be negative.
+	//It is increased by movement.
+	public int evasion = 0;
+	//This determines how much evasion is penalized.
+	//It is increased mostly by being targeted by melee attacks.
+	public int harassment = 0;
+	
 	override public int movementModifier {
 		get {
 			return isAlive() ? base.movementModifier : 0;

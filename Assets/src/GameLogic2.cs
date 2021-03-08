@@ -90,105 +90,10 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		animationManager = GetComponent<AnimationManager>();
 		
 		//Center camera on arena.
-		//float cameraStartX = 
 		Vector3 centerHexPos = HexGridRenderer.getXYZPos(4, 5);
-		//Debug.Log("center hex: " + centerHexPos);
 		Camera.main.transform.position = centerHexPos;
 
-		//processNextAction();
 		battleState.setInputSource(this);
-
-		/*
-		//test showing text:
-		GameObject textHolder = new GameObject();
-		textHolder.name = "Test Setup Text";
-
-		TextMesh textComp = textHolder.AddComponent<TextMesh>();
-		textComp.text = "test";
-
-		Font font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-		textComp.font = font;
-		textComp.fontSize = 60;
-		textComp.characterSize = 10;
-		textComp.color = Color.red;
-		textComp.transform.SetParent(gameObject.transform, false);
-		Vector3 pos = new Vector3(0, 0, 0);
-		//Adding the TextMesh will automatically add the MeshRenderer
-		textHolder.GetComponent<MeshRenderer>().receiveShadows = false;
-		textHolder.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-		textHolder.transform.localPosition = pos;
-		*/
-
-		//Test showing image:
-		/*
-		GameObject imageHolder = new GameObject();
-		imageHolder.name = "Image Holder";
-
-		MeshRenderer meshRenderer = imageHolder.AddComponent<MeshRenderer>();
-		//meshRenderer.name = "Image Mesh Renderer";
-
-		Material standardShaderMaterial = new Material(Shader.Find("Unlit/Transparent Cutout"));
-		
-		//standardShaderMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-		//standardShaderMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-		//standardShaderMaterial.SetInt("_ZWrite", 1);
-		//standardShaderMaterial.EnableKeyword("_ALPHATEST_ON");
-		//standardShaderMaterial.DisableKeyword("_ALPHABLEND_ON");
-		//standardShaderMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-		//standardShaderMaterial.renderQueue = 2450;
-		
-		meshRenderer.sharedMaterial = standardShaderMaterial;
-		meshRenderer.receiveShadows = false;
-		meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-
-		MeshFilter imageMeshFilter = imageHolder.AddComponent<MeshFilter>();
-		//imageMeshFilter.name = "Image Mesh Filter";
-
-		Mesh mesh = new Mesh();
-		mesh.name = "Image Mesh";
-
-		mesh.vertices = new Vector3[4] {
-			new Vector3(0, 0, 0),
-			new Vector3(HexGridRenderer.CELL_HEIGHT, 0, 0),
-			new Vector3(0, HexGridRenderer.CELL_HEIGHT, 0),
-			new Vector3(HexGridRenderer.CELL_HEIGHT, HexGridRenderer.CELL_HEIGHT, 0)
-		};
-
-		mesh.triangles = new int[6] {
-			0, 2, 1, // lower left triangle
-			2, 3, 1 // upper right triangle
-		};
-
-		mesh.normals = new Vector3[4] {
-			-Vector3.forward,
-			-Vector3.forward,
-			-Vector3.forward,
-			-Vector3.forward
-		};
-
-		mesh.uv = new Vector2[4] {
-			new Vector2(0, 0),
-			new Vector2(1, 0),
-			new Vector2(0, 1),
-			new Vector2(1, 1)
-		};
-
-		imageMeshFilter.mesh = mesh;
-
-		// Create a texture. Texture size does not matter, since
-		// LoadImage will replace with with incoming image size.
-		Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-		// A small 64x64 Unity logo encoded into a PNG.
-		byte[] pngBytes = gameState.imageLibrary.getImageBytesById("crater");
-		// Load data into the texture.
-		tex.LoadImage(pngBytes);
-		// Assign texture to renderer's material.
-		meshRenderer.material.mainTexture = tex;
-
-		imageHolder.transform.SetParent(hexGridRenderer.transform, false);
-		Vector3 pos = new Vector3(0, 0, 0);
-		imageHolder.transform.localPosition = pos;
-		*/
 	}
 
 	/// <summary>
@@ -380,19 +285,39 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		hexGridRenderer.clearHilight2();
 		hexGridRenderer.reDrawColor();
 		if (battleState.isTargetValid(selectedHexXY)) {
+			EntityRenderer sourceRenderer = hexGridRenderer.getEntityRendererByName(battleState.getCurrentCombatant().name);
+			Vector3 sourcePos = HexGridRenderer.getXYZPos(battleState.getCurrentCombatant().pos);
+			Vector3 targetPos = HexGridRenderer.getXYZPos(selectedHexXY);
+			Debug.Log("Current action type: " + battleState.getCurrentAction().type);
+
+			float animationDelay = 0;
+			if (battleState.getCurrentAction().type == CombatActionType.MELEE_ATTACK) {
+				Debug.Log("Animate Melee attack");
+				animationDelay = animationManager.queueAnimation(new BumpAnimation(sourceRenderer.gameObject, targetPos)).getDuration() / 2;
+			} else if (battleState.getCurrentAction().type == CombatActionType.RANGE_ATTACK) {
+				animationDelay = animationManager.queueAnimation(new SimpleProjectileAnimation(hexGridRenderer.gameObject, sourcePos, targetPos)).getDuration();
+			}
 			List<CombatEffect> pendingEffects = battleState.determineCombatEffects(selectedHexXY);
 			foreach (CombatEffect pendingEffect in pendingEffects) {
 				//There's a smarter way to do this.
-				EntityRenderer target = hexGridRenderer.getEntityRendererByName(pendingEffect.combatant.name);
-				SimpleTextAnimation test = new SimpleTextAnimation(target.gameObject.transform.position, pendingEffect.damage.ToString());
-				animationManager.queueAnimation(test);
-
-				if (pendingEffect.damage + pendingEffect.combatant.damage >= pendingEffect.combatant.health) {
-					//target.gameObject.GetComponent<Renderer>().material.color = new Color(0, 0, 0, 0.5f);
+				EntityRenderer targetRenderer = hexGridRenderer.getEntityRendererByName(pendingEffect.target.name);
+				if (pendingEffect.damage > 0) {
+					Debug.Log("animation delay is: " + animationDelay);
 					animationManager.queueAnimation(
-						new SimpleFadeOut(target.gameObject)
+						//SimpleTextAnimation relies on worldspace position, so convert it here.
+						new SimpleTextAnimation(hexGridRenderer.transform.TransformPoint(targetPos), pendingEffect.damage.ToString(), 1, animationDelay)
 					);
+					if (pendingEffect.damage + pendingEffect.target.damage >= pendingEffect.target.health) {
+						//target.gameObject.GetComponent<Renderer>().material.color = new Color(0, 0, 0, 0.5f);
+						animationManager.queueAnimation(
+							new SimpleFadeOut(targetRenderer.gameObject, 2, animationDelay)
+						);
+					}
+				} else {
+					//Bump the opposite direction from the source of the attack.
+					animationManager.queueAnimation(new BumpAnimation(targetRenderer.gameObject, sourcePos, -0.5f, 0.5f, 0.1f));
 				}
+				
 			}
 		} else {
 			//We consider this to be skipped input.
