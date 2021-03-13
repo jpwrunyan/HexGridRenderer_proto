@@ -37,7 +37,6 @@ public class AnimationManager : MonoBehaviour {
 
 	private void animateTarget(BaseAnimation animation) {
 		if (animation.delay > 0) {
-			Debug.Log("there is a delay: " + animation.delay + " " + animation.GetType().Name);
 			animation.delay -= Time.deltaTime;
 			return;
 		}

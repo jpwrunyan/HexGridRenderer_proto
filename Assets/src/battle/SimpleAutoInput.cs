@@ -18,7 +18,7 @@ public class SimpleAutoInput : InputSource {
 			case CombatActionType.RANGE_ATTACK: return getSelectTargetInput(battleState);
 			default: {
 				BattleInput input = new BattleInput();
-				input.combatantId = battleState.getCurrentCombatantId();
+				//input.combatantId = battleState.getCurrentCombatantId();
 				return input;
 			}
 		}
@@ -26,7 +26,7 @@ public class SimpleAutoInput : InputSource {
 
 	public BattleInput getSelectCardInput(BattleState battleState) {
 		BattleInput input = new BattleInput();
-		input.combatantId = battleState.getCurrentCombatantId();
+		//input.combatantId = battleState.getCurrentCombatantId();
 		input.value = new Vector2Int(0, 0);
 		return input;
 	}
@@ -40,7 +40,7 @@ public class SimpleAutoInput : InputSource {
 		}
 
 		BattleInput input = new BattleInput();
-		input.combatantId = battleState.getCurrentCombatantId();
+		//input.combatantId = battleState.getCurrentCombatantId();
 		input.value = battleState.hexGrid.hexPos[i];
 
 		return input;
@@ -48,7 +48,7 @@ public class SimpleAutoInput : InputSource {
 
 	public BattleInput getSelectTargetInput(BattleState battleState) {
 		BattleInput input = new BattleInput();
-		input.combatantId = battleState.getCurrentCombatantId();
+		//input.combatantId = battleState.getCurrentCombatantId();
 		input.value = battleState.getCombatantsInTurnOrder()[0].pos;
 		return input;
 	}

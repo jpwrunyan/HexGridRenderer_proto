@@ -6,20 +6,15 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class CombatantRenderer : MonoBehaviour {
 
+	public Combatant combatant;
+
 	public Text infoText;
+	public Text harassmentText;
+	public Text evasionText;
 
-	public void setText(string text) {
-		infoText.text = text;
+	public void updateDisplay() {
+		infoText.text = combatant.name;
+		harassmentText.text = combatant.harassment.ToString();
+		evasionText.text = combatant.evasion.ToString();
 	}
-
-    // Start is called before the first frame update
-    void Start() {
-		
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

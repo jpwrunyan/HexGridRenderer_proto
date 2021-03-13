@@ -12,14 +12,16 @@ using UnityEngine;
 /// 
 /// Cards will need to be generated from card templates at the beginning of battle.
 /// Doing anything more abstract will probably be an immense headache.
+/// 
+/// This is already a headache and whatever I originally intended, it doesn't make sense anymore.
 /// </summary>
 public class Card {
 
-	public string cardMapId;
-	public int sourceId;
+	//public string cardMapId;
+	//public int sourceId;
 
 	//This value may not strictly be necessary but here as a convenience.
-	public int combatantId;
+	//public int combatantId;
 
 	//This may not be necessary considering the way I'm restructuring the system to be char-by-char
 	//May change, but for now using this to tie to battlefield entity:
@@ -31,6 +33,7 @@ public class Card {
 	// Card values
 	//----------------------------------------
 	public string title = "Card Title";
+	public string image;
 
 	//----------------------------------------
 	// Card stats/actions
@@ -44,7 +47,7 @@ public class Card {
 	public int move = 0;
 	public int moveType = 0; //unused
 
-	public List<CardAction> getCardActions() {
+	public List<CardAction> getCardActions(CardSource cardSource=null) {
 		List<CardAction> cardActions = new List<CardAction>();
 		if (move > 0) {
 			CardAction cardAction = new CardAction();

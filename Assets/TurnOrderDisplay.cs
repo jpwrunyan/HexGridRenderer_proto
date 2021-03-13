@@ -43,12 +43,13 @@ public class TurnOrderDisplay : MonoBehaviour {
 				combatantRenderer.GetComponent<Image>().sprite = entitySprite;
 				combatantRenderer.GetComponent<Image>().preserveAspect = true;
 				combatantRenderer.gameObject.name = combatantsInTurnOrder[i].name + " Portrait Renderer";
-				combatantRenderer.setText(combatantsInTurnOrder[i].name);
-
+				//combatantRenderer.setText(combatantsInTurnOrder[i].name);
+				combatantRenderer.combatant = combatantsInTurnOrder[i];
 				combatantRenderer.transform.SetParent(this.transform, false);
 				combatantRenderers[combatant] = combatantRenderer;
 			}
 			combatantRenderer.transform.SetSiblingIndex(i);
+			combatantRenderer.updateDisplay();
 		}
 
 		HorizontalLayoutGroup layout = GetComponent<HorizontalLayoutGroup>();

@@ -19,8 +19,13 @@ public class StartupLoader : MonoBehaviour {
 		string arenaFilename = "testBattlefield.json";
 
 		try {
+			Dictionary<string, CardMap> cardMaps = new Dictionary<string, CardMap>();
+			foreach (CardMap cardMap in JsonHelper.FromJsonArray<CardMap>(await loadJSONFile("cards/baseCards.json"))) {
+				cardMaps[cardMap.id] = cardMap;
+			}
+
 			//Because it's a struct, arenaData cannot be null
-			ArenaData arenaData = JsonUtility.FromJson<ArenaData>(await loadArenaData(arenaFilename));
+			ArenaData arenaData = JsonUtility.FromJson<ArenaData>(await loadJSONFile(arenaFilename));
 			GameState.PRNG.seed = 10;
 
 			ImageLibrary imageLibrary = new ImageLibrary();
@@ -70,7 +75,8 @@ public class StartupLoader : MonoBehaviour {
 			battlefieldEntities.AddRange(createExtraEntities());
 			battleState.battlefieldEntities = battlefieldEntities;
 
-
+			List<Card> cards;
+			Card card;
 
 			//Character 1
 			Combatant character = new Combatant();
@@ -82,37 +88,8 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksVision = true;
 			character.health = 4;
 			character.image = "gunslinger_male";
+			character.deck = new Deck(getCardsFromCardMaps(character, cardMaps, "walk", "run", "shoot", "dash", "lunge"), "Character 1");
 
-			List<Card> cards = new List<Card>();
-
-			Card card;
-			card = new Card();
-			card.title = "Character 1\nMove and Attack";
-			card.move = 1;
-			card.attack = 2;
-			card.minRange = 1;
-			card.maxRange = 1;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Character 1\nMove 2";
-			card.move = 2;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Character 1\nMove 4";
-			card.move = 4;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Character 1\nAttack 4\nShoot someone first.\nSee the bug.";
-			card.attack = 4;
-			card.minRange = 1;
-			card.maxRange = 5;
-			card.radius = 0;
-			cards.Add(card);
-
-			character.deck = new Deck(cards, "Character 1");
 			battleState.addActiveCombatant(character);
 
 			//Character 2
@@ -126,33 +103,8 @@ public class StartupLoader : MonoBehaviour {
 			character.health = 4;
 			character.image = "medic_female";
 			character.isAI = true;
+			character.deck = new Deck(getCardsFromCardMaps(character, cardMaps, "step", "walk", "run"), "Medic", 3);
 
-			cards = new List<Card>();
-
-			card = new Card();
-			card.title = "Medic Move 1";
-			card.move = 1;
-			cards.Add(card);
-			/*
-			card = new Card();
-			card.title = "Medic\nAttack 4\nShoot someone first.\nSee the bug.";
-			card.attack = 4;
-			card.minRange = 1;
-			card.maxRange = 5;
-			card.radius = 0;
-			cards.Add(card);
-			*/
-			card = new Card();
-			card.title = "Medic Move 2";
-			card.move = 2;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Medic Move 3";
-			card.move = 3;
-			cards.Add(card);
-
-			character.deck = new Deck(cards, "Medic", 4);
 			battleState.addActiveCombatant(character);
 
 			//Character 3
@@ -165,33 +117,8 @@ public class StartupLoader : MonoBehaviour {
 			character.health = 4;
 			character.image = "gunslinger_female";
 			character.isAI = false;
+			character.deck = new Deck(getCardsFromCardMaps(character, cardMaps, "walk", "run", "shoot", "dash", "lunge"), "Gunslinger Female", 4);
 
-			cards = new List<Card>();
-
-			card = new Card();
-			card.title = "Gunslinger\nMove and Attack";
-			card.move = 1;
-			card.attack = 4;
-			card.minRange = 1;
-			card.maxRange = 1;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Gunslinger Move 2";
-			card.move = 2;
-			cards.Add(card);
-			/*
-			card = new Card();
-			card.title = "Gunslinger Move 3";
-			card.move = 3;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Gunslinger Move 4";
-			card.move = 4;
-			cards.Add(card);
-			*/
-			character.deck = new Deck(cards, "Gunslinger Female", 4);
 			battleState.addActiveCombatant(character);
 
 			//Character 4
@@ -204,38 +131,8 @@ public class StartupLoader : MonoBehaviour {
 			character.health = 4;
 			character.image = "merc_female";
 			character.isAI = false;
+			character.deck = new Deck(getCardsFromCardMaps(character, cardMaps, "walk", "run", "run", "shoot", "grenade"), "Merc Female", 3);
 
-			cards = new List<Card>();
-
-			card = new Card();
-			card.title = "Merc Move 1";
-			card.move = 1;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Throw Grenade 4";
-			card.attack = 4;
-			card.minRange = 1;
-			card.maxRange = 4;
-			card.radius = 1;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Merc Move 2";
-			card.move = 2;
-			cards.Add(card);
-
-			card = new Card();
-			card.title = "Merc Move 3";
-			card.move = 3;
-			cards.Add(card);
-			
-			card = new Card();
-			card.title = "Merc Move 3b";
-			card.move = 3;
-			cards.Add(card);
-			
-			character.deck = new Deck(cards, "Merc Female", 3);
 			battleState.addActiveCombatant(character);
 
 			//Finish with characters
@@ -296,7 +193,21 @@ public class StartupLoader : MonoBehaviour {
 		
 		return battlefieldEntities;
 	}
-	private static async Task<string> loadArenaData(string filename) {
+
+	private static List<Card> getCardsFromCardMaps(Combatant cardSource, Dictionary<string, CardMap> cardMaps, params string[] cardMapIds) {
+		List<Card> cards = new List<Card>();
+		foreach (string cardMapId in cardMapIds) {
+			if (cardMaps.ContainsKey(cardMapId)) {
+				cards.Add(cardMaps[cardMapId].getCard(cardSource));
+			} else {
+				cards.Add(new Card());
+			}
+		}
+		return cards;
+	}
+
+	private static async Task<string> loadJSONFile(string filename) {
+		Debug.Log("load file: " + filename);
 		string path = Application.streamingAssetsPath + Path.DirectorySeparatorChar + filename;
 		if (File.Exists(path)) {
 			using (StreamReader sr = new StreamReader(path)) {
@@ -306,5 +217,30 @@ public class StartupLoader : MonoBehaviour {
 			Debug.Log("CANT FIND FILE");
 			return null;
 		}
+	}
+}
+
+/// <summary>
+/// For de/serialization of JSON arrays.
+/// </summary>
+public static class JsonHelper {
+	public static T[] FromJson<T>(string json) {
+		Wrapper<T> wrapper = JsonUtility.FromJson<Wrapper<T>>(json);
+		return wrapper.Items;
+	}
+
+	public static T[] FromJsonArray<T>(string json) {
+		return FromJson<T>("{\"Items\":" + json + "}");
+	}
+
+	public static string ToJson<T>(T[] array, bool prettyPrint=false) {
+		Wrapper<T> wrapper = new Wrapper<T>();
+		wrapper.Items = array;
+		return JsonUtility.ToJson(wrapper, prettyPrint);
+	}
+
+	[Serializable]
+	private class Wrapper<T> {
+		public T[] Items;
 	}
 }

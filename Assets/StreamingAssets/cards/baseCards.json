@@ -1,0 +1,32 @@
+[
+	{"id": "step", "title": "Step", "move": 1}, 
+	{"id": "walk", "title": "Walk", "move": 2}, 
+	{"id": "run", "title": "Run", "move": 3}, 
+	{"id": "dash", "title": "Dash", "move": 4}, 
+	{
+		"id": "lunge", 
+		"title": "Lunge\nAttack", 
+		"move": 1, 
+		"attack": 2
+		/*
+		default is melee range, single target
+		*/
+	}, 
+	{
+		"id": "shoot", 
+		"title": "Shoot", 
+		"attack": 2, 
+		"maxRange": 4
+		/*
+		default is melee range, single target
+		*/
+	},
+	{
+		"id": "grenade", 
+		"title": "Grenade",
+		"attack": 4,
+		"minRange": 1, 
+		"maxRange": 3, 
+		"radius": 1
+	}
+]

@@ -153,11 +153,13 @@ public class BattleState {
 				HexNode dest = pathMap.getClosestHexNodeTo(input.value, getCurrentAction().maxRange);
 
 				if (dest != null) {
-					Combatant combatant = battlefieldEntities[input.combatantId] as Combatant;
-					combatant.pos = dest.hexPos;
+					//Combatant combatant = battlefieldEntities[input.combatantId] as Combatant;
+					//combatant.pos = dest.hexPos;
+					currentCombatant.pos = dest.hexPos;
 					//Increment evasion for each hex traversed.
 					while (dest.prevNode != null) {
-						combatant.evasion++;
+						//combatant.evasion++;
+						currentCombatant.evasion++;
 						dest = (HexNode) dest.prevNode;
 					}
 				} else {

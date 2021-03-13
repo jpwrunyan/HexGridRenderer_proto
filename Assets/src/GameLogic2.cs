@@ -241,7 +241,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		selectedCardRenderer.gameObject.SetActive(true);
 		cardListDisplay.gameObject.SetActive(false);
 		BattleInput input = new BattleInput();
-		input.combatantId = selectedCard.combatantId;
+		//input.combatantId = selectedCard.combatantId;
 		input.value = new Vector2Int(cardListDisplay.selectedIndex, 0);
 		battleState.processActionInput(input);
 	}
@@ -275,7 +275,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		}
 		hexPathRenderer.gameObject.SetActive(false);
 		BattleInput input = new BattleInput();
-		input.combatantId = battleState.getCurrentCombatantId();
+		//input.combatantId = battleState.getCurrentCombatantId();
 		input.value = selectedHexXY;
 		battleState.processActionInput(input);
 	}
@@ -292,8 +292,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 
 			float animationDelay = 0;
 			if (battleState.getCurrentAction().type == CombatActionType.MELEE_ATTACK) {
-				Debug.Log("Animate Melee attack");
-				animationDelay = animationManager.queueAnimation(new BumpAnimation(sourceRenderer.gameObject, targetPos)).getDuration() / 2;
+				animationDelay = animationManager.queueAnimation(new BumpAnimation(sourceRenderer.gameObject, targetPos, HexGridRenderer.CELL_WIDTH / 2)).getDuration() / 2;
 			} else if (battleState.getCurrentAction().type == CombatActionType.RANGE_ATTACK) {
 				animationDelay = animationManager.queueAnimation(new SimpleProjectileAnimation(hexGridRenderer.gameObject, sourcePos, targetPos)).getDuration();
 			}
@@ -302,20 +301,18 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 				//There's a smarter way to do this.
 				EntityRenderer targetRenderer = hexGridRenderer.getEntityRendererByName(pendingEffect.target.name);
 				if (pendingEffect.damage > 0) {
-					Debug.Log("animation delay is: " + animationDelay);
 					animationManager.queueAnimation(
 						//SimpleTextAnimation relies on worldspace position, so convert it here.
 						new SimpleTextAnimation(hexGridRenderer.transform.TransformPoint(targetPos), pendingEffect.damage.ToString(), 1, animationDelay)
 					);
 					if (pendingEffect.damage + pendingEffect.target.damage >= pendingEffect.target.health) {
-						//target.gameObject.GetComponent<Renderer>().material.color = new Color(0, 0, 0, 0.5f);
 						animationManager.queueAnimation(
 							new SimpleFadeOut(targetRenderer.gameObject, 2, animationDelay)
 						);
 					}
 				} else {
 					//Bump the opposite direction from the source of the attack.
-					animationManager.queueAnimation(new BumpAnimation(targetRenderer.gameObject, sourcePos, -0.5f, 0.5f, 0.1f));
+					animationManager.queueAnimation(new BumpAnimation(targetRenderer.gameObject, sourcePos, -HexGridRenderer.CELL_WIDTH / 2, 0.5f, 0.1f));
 				}
 				
 			}
@@ -324,7 +321,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 		}
 
 		BattleInput input = new BattleInput();
-		input.combatantId = battleState.getCurrentCombatantId();
+		//input.combatantId = battleState.getCurrentCombatantId();
 		input.value = selectedHexXY;
 		battleState.processActionInput(input);
 	}
@@ -477,7 +474,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 						//do something
 						//Debug.Log("pass");
 						BattleInput input = new BattleInput();
-						input.combatantId = battleState.getCurrentCombatantId();
+						//input.combatantId = battleState.getCurrentCombatantId();
 						input.value = new Vector2Int(cardListDisplay.selectedIndex, 0);
 						battleState.processActionInput(input);
 					}
