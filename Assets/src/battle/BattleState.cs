@@ -133,6 +133,8 @@ public class BattleState {
 					pendingActions = card.getCardActions();
 					//May possibly handle discards via CombatEffect
 					currentCombatantDeck.discard(card);
+					//Combatant's initiative score increases.
+					currentCombatant.initiative += card.initiative;
 				}
 				actionPhase = 0;
 				break;
@@ -237,6 +239,9 @@ public class BattleState {
 		turn = 0;
 		//New round means draw new cards...
 		//For now all players draw immediately??? Will probably change this.
+		activeCombatantIds.Sort((a, b) => {
+			return ((Combatant)battlefieldEntities[a]).initiative - ((Combatant)battlefieldEntities[b]).initiative;
+		});
 		for (int i = 0; i < activeCombatantIds.Count; i++) {
 			Combatant combatant = battlefieldEntities[activeCombatantIds[i]] as Combatant;
 			if (combatant.isAlive()) {
@@ -325,6 +330,7 @@ public class BattleState {
 			//We'll update here for now until there's a more elegant solution.
 			if (effect.target.isAlive() == false) {
 				effect.target.blocksMovement = false;
+				effect.target.blocksVision = false;
 			}
 			//Debug.Log("apply effect to: " + effect.combatant.name + " " + (effect.combatant.health - effect.combatant.damage) + "/" + effect.combatant.health);
 		}

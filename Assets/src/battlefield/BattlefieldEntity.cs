@@ -79,18 +79,18 @@ public class BattlefieldEntity {
 		}
 	}
 
-	private int _health;
+	private int _hitpoints;
 
-	public int health {
+	public int hitpoints {
 		get {
-			return _health;
+			return _hitpoints;
 		}
 		set {
-			_health = value;
+			_hitpoints = value;
 		}
 	}
 
 	public bool isAlive() {
-		return damage < health;
+		return damage < hitpoints;
 	}
 }

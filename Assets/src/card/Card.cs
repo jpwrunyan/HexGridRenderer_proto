@@ -46,13 +46,14 @@ public class Card {
 	//Move action values:
 	public int move = 0;
 	public int moveType = 0; //unused
+	public int initiative = 1;
 
 	public List<CardAction> getCardActions(CardSource cardSource=null) {
 		List<CardAction> cardActions = new List<CardAction>();
 		if (move > 0) {
 			CardAction cardAction = new CardAction();
 			cardAction.type = CombatActionType.MOVE;
-			//cardAction.value = move;
+			cardAction.value = 0; //This will be used to determine the move type.
 			cardAction.maxRange = move;
 			cardAction.minRange = 0;
 			cardActions.Add(cardAction);

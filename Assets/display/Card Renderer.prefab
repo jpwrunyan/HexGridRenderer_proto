@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1373011667735418589}
   - component: {fileID: 7927868412847469731}
   - component: {fileID: -8757417698845699}
+  - component: {fileID: 158384814576194200}
   m_Layer: 5
   m_Name: Card Renderer
   m_TagString: Untagged
@@ -103,6 +104,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   titleText: {fileID: 6395572215111758523}
+  cardStatLineRendererPrefab: {fileID: -2920055532447360994, guid: 2674ad4b88921754bb07afe856cc84c7,
+    type: 3}
+--- !u!114 &158384814576194200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1373011667735418591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 40
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 0
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!1 &8743623797558302330
 GameObject:
   m_ObjectHideFlags: 0
@@ -114,6 +143,7 @@ GameObject:
   - component: {fileID: 4217771740743531074}
   - component: {fileID: 7718223799715333688}
   - component: {fileID: 6395572215111758523}
+  - component: {fileID: 2516563486327981211}
   m_Layer: 5
   m_Name: Card Title Text
   m_TagString: Untagged
@@ -182,3 +212,23 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Title not set
+--- !u!114 &2516563486327981211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743623797558302330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 1
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: -1
+  m_PreferredHeight: -1
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1

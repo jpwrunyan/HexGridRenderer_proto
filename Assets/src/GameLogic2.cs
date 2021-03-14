@@ -288,7 +288,7 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 			EntityRenderer sourceRenderer = hexGridRenderer.getEntityRendererByName(battleState.getCurrentCombatant().name);
 			Vector3 sourcePos = HexGridRenderer.getXYZPos(battleState.getCurrentCombatant().pos);
 			Vector3 targetPos = HexGridRenderer.getXYZPos(selectedHexXY);
-			Debug.Log("Current action type: " + battleState.getCurrentAction().type);
+			//Debug.Log("Current action type: " + battleState.getCurrentAction().type);
 
 			float animationDelay = 0;
 			if (battleState.getCurrentAction().type == CombatActionType.MELEE_ATTACK) {
@@ -303,9 +303,14 @@ public class GameLogic2 : MonoBehaviour, InputSource {
 				if (pendingEffect.damage > 0) {
 					animationManager.queueAnimation(
 						//SimpleTextAnimation relies on worldspace position, so convert it here.
-						new SimpleTextAnimation(hexGridRenderer.transform.TransformPoint(targetPos), pendingEffect.damage.ToString(), 1, animationDelay)
+						new SimpleTextAnimation(
+							hexGridRenderer.transform.TransformPoint(HexGridRenderer.getXYZPos(pendingEffect.target.pos)), 
+							pendingEffect.damage.ToString(), 
+							1, 
+							animationDelay
+						)
 					);
-					if (pendingEffect.damage + pendingEffect.target.damage >= pendingEffect.target.health) {
+					if (pendingEffect.damage + pendingEffect.target.damage >= pendingEffect.target.hitpoints) {
 						animationManager.queueAnimation(
 							new SimpleFadeOut(targetRenderer.gameObject, 2, animationDelay)
 						);

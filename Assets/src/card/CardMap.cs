@@ -26,6 +26,7 @@ public class CardMap {
 	public int minRange = 1;
 	public int maxRange = 1;
 	public int radius = 0;
+	public int initiative = 1;
 
 	public Card getCard(Combatant cardSource) {
 		Card card = new Card();
@@ -35,6 +36,7 @@ public class CardMap {
 		card.minRange = minRange;
 		card.maxRange = maxRange;
 		card.radius = radius;
+		card.initiative = initiative;
 		return card;
 	}
 	/*

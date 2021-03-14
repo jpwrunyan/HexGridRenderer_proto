@@ -86,7 +86,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksMovement = true;
 			character.movementModifier = 100;
 			character.blocksVision = true;
-			character.health = 4;
+			character.hitpoints = 4;
 			character.image = "gunslinger_male";
 			character.deck = new Deck(getCardsFromCardMaps(character, cardMaps, "walk", "run", "shoot", "dash", "lunge"), "Character 1");
 
@@ -100,7 +100,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksMovement = true;
 			character.movementModifier = 100;
 			character.blocksVision = true;
-			character.health = 4;
+			character.hitpoints = 4;
 			character.image = "medic_female";
 			character.isAI = true;
 			character.deck = new Deck(getCardsFromCardMaps(character, cardMaps, "step", "walk", "run"), "Medic", 3);
@@ -114,7 +114,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksMovement = true;
 			character.movementModifier = 100;
 			character.blocksVision = true;
-			character.health = 4;
+			character.hitpoints = 4;
 			character.image = "gunslinger_female";
 			character.isAI = false;
 			character.deck = new Deck(getCardsFromCardMaps(character, cardMaps, "walk", "run", "shoot", "dash", "lunge"), "Gunslinger Female", 4);
@@ -128,7 +128,7 @@ public class StartupLoader : MonoBehaviour {
 			character.blocksMovement = true;
 			character.movementModifier = 100;
 			character.blocksVision = true;
-			character.health = 4;
+			character.hitpoints = 4;
 			character.image = "merc_female";
 			character.isAI = false;
 			character.deck = new Deck(getCardsFromCardMaps(character, cardMaps, "walk", "run", "run", "shoot", "grenade"), "Merc Female", 3);
